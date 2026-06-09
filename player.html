@@ -2,26 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>RK IP TV — Player</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- HLS.js — preload করা হচ্ছে যাতে player page খুলতেই ready থাকে -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script"/>
+
   <!-- Tabler Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"/>
-  <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
+  <style>
     :root {
-      --accent: #00c6ff;
-      --bg: #070e1c;
-      --bg-panel: #0e1628;
-      --border: #1e2f4a;
-      --text: #e8edf5;
-      --text2: #7a8fa8;
-      --live-bg: #e03030;
-      --font-d: 'Rajdhani', sans-serif;
-      --font-b: 'Nunito', sans-serif;
+      --accent:    #00c6ff;
+      --bg:        #070e1c;
+      --bg-panel:  #0e1628;
+      --border:    #1e2f4a;
+      --text:      #e8edf5;
+      --text2:     #7a8fa8;
+      --live-bg:   #dc2626;
+      --font-d:    'Rajdhani', sans-serif;
+      --font-b:    'Nunito', sans-serif;
     }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
     body {
       background: var(--bg);
@@ -30,18 +38,21 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
-    /* HEADER */
+    /* ================================
+       HEADER
+    ================================ */
     header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 0 20px;
-      height: 60px;
-      background: rgba(7,14,28,.95);
+      gap: 12px;
+      padding: 0 18px;
+      height: 58px;
+      background: rgba(7,14,28,.96);
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -51,197 +62,306 @@
     .back-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      text-decoration: none;
+      gap: 5px;
       color: var(--text2);
       font-size: 13px;
       font-weight: 700;
       padding: 6px 12px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      transition: .2s;
+      transition: .18s;
       cursor: pointer;
       background: none;
       font-family: var(--font-b);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .back-btn:hover { color: var(--accent); border-color: var(--accent); }
 
-    .header-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-    }
     .logo-icon {
-      width: 34px; height: 34px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), #0080ff);
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #0070e0);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
+      text-decoration: none;
     }
     .logo-icon img { width:100%; height:100%; object-fit:cover; }
-    .logo-icon .logo-fallback {
-      font-family: var(--font-d); font-weight:700; font-size:13px; color:#fff;
-      display:flex; align-items:center; justify-content:center; width:100%; height:100%;
+    .logo-fallback {
+      font-family: var(--font-d); font-weight:700; font-size:12px; color:#fff;
     }
-    .logo-text { font-family: var(--font-d); font-size:20px; font-weight:700; }
-    .logo-text .accent { color: var(--accent); }
 
     .player-title {
       flex: 1;
       font-family: var(--font-d);
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-align: center;
+      padding: 0 8px;
     }
 
-    /* CONTENT */
+    /* ================================
+       CONTENT AREA
+    ================================ */
     .content {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 16px 30px;
-      gap: 16px;
+      padding: 18px 14px 28px;
+      gap: 14px;
     }
 
     .player-wrap {
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
     }
 
-    /* ERROR STATE */
+    /* NO STREAM */
     .no-stream {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 60px 20px;
-      color: var(--text2);
-      text-align: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; padding: 80px 20px;
+      color: var(--text2); text-align: center;
     }
-    .no-stream i { font-size: 48px; color: var(--border); }
+    .no-stream i { font-size: 52px; color: var(--border); }
     .no-stream p { font-size: 15px; font-weight: 600; }
+    .no-stream a {
+      color: var(--accent); text-decoration: none;
+      font-size: 13px; font-weight: 700;
+      padding: 8px 18px; border: 1px solid var(--accent);
+      border-radius: 8px; transition: .18s;
+    }
+    .no-stream a:hover { background: rgba(0,198,255,.1); }
 
-    /* PLAYER STYLES */
+    /* ================================
+       PLAYER WRAPPER
+    ================================ */
     #pw {
       background: #000;
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid #ffffff18;
+      border: 1px solid rgba(255,255,255,.08);
       width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
     }
+
+    /* VIDEO AREA */
     #va {
       position: relative;
       width: 100%;
       aspect-ratio: 16/9;
       background: #000;
       cursor: pointer;
+      user-select: none;
     }
-    #vid { width:100%; height:100%; display:block; background:#000; }
 
+    #vid {
+      width: 100%; height: 100%;
+      display: block; background: #000;
+      /* important for mobile fast render */
+      will-change: transform;
+    }
+
+    /* OVERLAY (shown before play) */
     #overlay {
       position: absolute; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 12px; background: #000;
+      gap: 14px;
+      background: linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.9));
+      transition: opacity .25s;
     }
-    #bigplay {
-      width: 68px; height: 68px; border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.08);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: background .2s, transform .15s;
-    }
-    #bigplay:hover { background: rgba(255,255,255,.18); transform: scale(1.06); }
-    #bigplay i { font-size: 28px; color: #fff; margin-left: 3px; }
-    .otxt { font-size: 13px; color: rgba(255,255,255,.45); letter-spacing: .04em; }
+    #overlay.hidden { opacity:0; pointer-events:none; }
 
+    #bigplay {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.3);
+      background: rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background .2s, transform .15s, border-color .2s;
+      backdrop-filter: blur(4px);
+    }
+    #bigplay:hover {
+      background: rgba(0,198,255,.25);
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+    #bigplay i { font-size: 30px; color: #fff; margin-left: 4px; }
+
+    .otxt {
+      font-size: 13px; color: rgba(255,255,255,.5);
+      font-family: var(--font-b); font-weight: 600;
+      letter-spacing: .02em;
+    }
+
+    /* SPINNER */
+    #spinner {
+      display: none; position: absolute; inset: 0;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.55);
+      pointer-events: none;
+    }
+    #spinner i { font-size: 38px; color: var(--accent); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin .7s linear infinite; }
+
+    /* CONTROL BAR */
     #cbar {
       position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 10px 14px 12px;
-      background: linear-gradient(transparent, rgba(0,0,0,.8));
-      display: flex; align-items: center; gap: 10px;
-      opacity: 0; transition: opacity .2s; pointer-events: none;
+      padding: 12px 14px 14px;
+      background: linear-gradient(transparent, rgba(0,0,0,.85));
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0; transition: opacity .22s;
+      pointer-events: none;
     }
-    #va:hover #cbar, #va.on #cbar { opacity: 1; pointer-events: all; }
+    /* show on hover OR when playing */
+    #va:hover #cbar,
+    #va.playing #cbar { opacity: 1; pointer-events: all; }
 
+    /* hide controls on mobile tap, re-show with tap */
+    #va.tap-visible #cbar { opacity: 1; pointer-events: all; }
+
+    /* control button */
     .cb {
-      background: none; border: none; color: #fff; cursor: pointer;
-      padding: 5px; border-radius: 5px;
+      background: none; border: none; color: #fff;
+      cursor: pointer; padding: 5px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       transition: background .15s; flex-shrink: 0;
     }
-    .cb:hover { background: rgba(255,255,255,.14); }
-    .cb i { font-size: 19px; line-height: 1; }
+    .cb:hover { background: rgba(255,255,255,.15); }
+    .cb i { font-size: 20px; line-height: 1; }
 
+    /* LIVE badge in bar */
     #lbadge {
       background: var(--live-bg); color: #fff;
-      font-size: 10px; font-weight: 600;
-      letter-spacing: .07em; padding: 3px 7px;
-      border-radius: 3px; flex-shrink: 0;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .07em; padding: 3px 8px;
+      border-radius: 4px; flex-shrink: 0;
       text-transform: uppercase; font-family: var(--font-d);
+      animation: lpulse 1.8s ease-in-out infinite;
     }
-    #lbadge.off { background: #444; }
+    #lbadge.off { background: #374151; animation: none; }
+    @keyframes lpulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.4); }
+      50%      { box-shadow: 0 0 0 4px rgba(220,38,38,0); }
+    }
 
+    /* VOLUME */
     #volwrap { display:flex; align-items:center; gap:6px; }
     #vslider {
       -webkit-appearance: none; appearance: none;
-      width: 72px; height: 3px; border-radius: 2px;
+      width: 70px; height: 3px; border-radius: 2px;
       background: rgba(255,255,255,.25); outline: none; cursor: pointer;
+      accent-color: var(--accent);
     }
     #vslider::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 13px; height: 13px; border-radius: 50%;
       background: #fff; cursor: pointer;
+      box-shadow: 0 0 4px rgba(0,0,0,.5);
     }
+
+    /* BUFFER BAR */
+    #bufbar {
+      position: absolute; bottom: 52px; left: 0; right: 0;
+      height: 3px; background: rgba(255,255,255,.1);
+    }
+    #bufprog {
+      height: 100%; background: var(--accent);
+      width: 0%; transition: width .3s;
+      box-shadow: 0 0 6px rgba(0,198,255,.5);
+    }
+
     .sp { flex: 1; }
 
+    /* QUALITY MENU */
     #qwrap { position: relative; }
     #qbtn {
       background: rgba(255,255,255,.1);
       border: .5px solid rgba(255,255,255,.2);
-      color: #fff; font-size: 11px; font-weight: 500;
-      padding: 4px 9px; border-radius: 4px;
-      cursor: pointer; letter-spacing: .04em; transition: background .15s;
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 5px;
+      cursor: pointer; letter-spacing: .04em;
+      transition: background .15s; font-family: var(--font-b);
+      white-space: nowrap;
     }
     #qbtn:hover { background: rgba(255,255,255,.2); }
+
     #qmenu {
       display: none; position: absolute;
-      bottom: 38px; right: 0;
-      background: #1c1c24;
-      border: .5px solid rgba(255,255,255,.15);
-      border-radius: 8px; overflow: hidden;
-      min-width: 120px; z-index: 20;
+      bottom: 40px; right: 0;
+      background: #131c2e;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px; overflow: hidden;
+      min-width: 110px; z-index: 20;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
     }
-    #qmenu.open { display: block; }
+    #qmenu.open { display: block; animation: qfade .15s ease; }
+    @keyframes qfade { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
     .qo {
-      padding: 9px 14px; font-size: 13px;
-      color: rgba(255,255,255,.7); cursor: pointer;
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 6px;
+      padding: 9px 14px; font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,.65); cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      transition: background .12s;
     }
-    .qo:hover { background: rgba(255,255,255,.07); }
-    .qo.sel { color: #4ade80; }
+    .qo:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .qo.sel { color: var(--accent); }
 
-    #spinner {
-      display: none; position: absolute; inset: 0;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,.6);
+    /* BOTTOM INFO BAR */
+    #infobar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 12px 16px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
     }
-    #spinner i { font-size: 36px; color: #fff; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinning { animation: spin .75s linear infinite; }
 
+    .info-quality {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text2); font-weight: 600;
+    }
+    .info-quality span { color: var(--accent); }
+
+    .info-speed {
+      font-size: 12px; color: var(--text2); font-weight: 600;
+    }
+    .info-speed span { color: var(--text); }
+
+    .retry-btn {
+      background: rgba(0,198,255,.1); border: 1px solid rgba(0,198,255,.3);
+      color: var(--accent); font-size: 12px; font-weight: 700;
+      padding: 5px 12px; border-radius: 7px; cursor: pointer;
+      transition: .18s; font-family: var(--font-b);
+      display: none;
+    }
+    .retry-btn:hover { background: rgba(0,198,255,.2); }
+    .retry-btn.show { display: block; }
+
+    /* ================================
+       RESPONSIVE
+    ================================ */
     @media (max-width: 600px) {
-      header { padding: 0 12px; }
+      header { padding: 0 12px; height: 52px; }
       .player-title { font-size: 14px; }
-      .content { padding: 12px 8px 20px; }
+      .content { padding: 10px 8px 20px; }
+      #pw { border-radius: 12px; }
+      #vslider { width: 54px; }
+      .cb i { font-size: 18px; }
+      #cbar { padding: 8px 10px 10px; gap: 6px; }
+      #bufbar { bottom: 44px; }
+      #bigplay { width: 60px; height: 60px; }
+      #bigplay i { font-size: 24px; }
+    }
+
+    /* Safe area for notch phones */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      header { padding-left: max(18px, env(safe-area-inset-left)); padding-right: max(18px, env(safe-area-inset-right)); }
     }
   </style>
 </head>
@@ -251,219 +371,454 @@
     <button class="back-btn" onclick="history.back()">
       <i class="ti ti-arrow-left"></i> Back
     </button>
-    <a href="index.html" class="header-logo">
-      <div class="logo-icon">
-        <img src="assets/logo.png" alt="RK IP TV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
-        <span class="logo-fallback" style="display:none">RK</span>
-      </div>
+    <a href="index.html" class="logo-icon">
+      <img src="assets/logo.png" alt="RK IP TV"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="logo-fallback" style="display:none">RK</span>
     </a>
     <div class="player-title" id="playerTitle">Live Stream</div>
   </header>
 
   <div class="content">
     <div class="player-wrap" id="playerWrap">
-      <!-- Player inject হবে JS দিয়ে -->
+      <!-- JS inject করবে -->
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <!-- HLS.js loaded এখানে -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
+
   <script>
-    // URL থেকে src ও title নাও
-    const params = new URLSearchParams(window.location.search);
-    const src    = params.get('src')   || '';
-    const title  = params.get('title') || 'Live Stream';
+  /* ================================================================
+     RK IP TV Player — Fast HLS Loader
+     Optimizations:
+       1. autoStartLoad: false → play button click হলেই bandwidth use হবে
+       2. startLevel: -1 → ABR, network অনুযায়ী quality auto-select
+       3. maxBufferLength: 20s → বেশি buffer করে রাখে না, memory save
+       4. lowLatencyMode: false → IPTV-তে দরকার নেই, stability বাড়ায়
+       5. Error recovery → fatal error হলে auto retry
+       6. Buffer progress bar → user দেখতে পায়
+       7. Speed display → real-time bandwidth দেখায়
+  ================================================================ */
 
-    document.getElementById('playerTitle').textContent = decodeURIComponent(title);
-    document.title = 'RK IP TV — ' + decodeURIComponent(title);
+  // URL params
+  const params = new URLSearchParams(window.location.search);
+  const SRC    = params.get('src')   ? decodeURIComponent(params.get('src'))   : '';
+  const TITLE  = params.get('title') ? decodeURIComponent(params.get('title')) : 'Live Stream';
 
-    const wrap = document.getElementById('playerWrap');
+  document.getElementById('playerTitle').textContent = TITLE;
+  document.title = 'RK IP TV — ' + TITLE;
 
-    if (!src) {
-      wrap.innerHTML = `
-        <div class="no-stream">
-          <i class="ti ti-player-off"></i>
-          <p>Stream URL পাওয়া যায়নি।</p>
-        </div>`;
-    } else {
-      wrap.innerHTML = `
-        <div id="pw">
-          <div id="va">
-            <video id="vid" playsinline></video>
-            <div id="overlay">
-              <div id="bigplay" onclick="togglePlay()">
-                <i class="ti ti-player-play" id="bigicon"></i>
-              </div>
-              <span class="otxt" id="otxt">লাইভ স্ট্রিম রেডি</span>
+  const wrap = document.getElementById('playerWrap');
+
+  if (!SRC) {
+    wrap.innerHTML = `
+      <div class="no-stream">
+        <i class="ti ti-player-off"></i>
+        <p>Stream URL পাওয়া যায়নি।</p>
+        <a href="index.html">← হোমে যাও</a>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div id="pw">
+        <div id="va">
+          <video id="vid" playsinline webkit-playsinline></video>
+
+          <!-- Overlay -->
+          <div id="overlay">
+            <div id="bigplay" onclick="togglePlay()">
+              <i class="ti ti-player-play" id="bigicon"></i>
             </div>
-            <div id="spinner"><i class="ti ti-loader-2 spinning"></i></div>
-            <div id="cbar">
-              <button class="cb" onclick="togglePlay()"><i class="ti ti-player-play" id="picon"></i></button>
-              <span id="lbadge" class="off">LIVE</span>
-              <div id="volwrap">
-                <button class="cb" onclick="toggleMute()"><i class="ti ti-volume" id="vicon"></i></button>
-                <input type="range" id="vslider" min="0" max="100" value="80" oninput="onVol(this.value)">
-              </div>
-              <div class="sp"></div>
-              <div id="qwrap">
-                <button id="qbtn" onclick="toggleQMenu()">Auto</button>
-                <div id="qmenu">
-                  <div class="qo sel" data-q="auto" onclick="pickQ(this)">Auto <i class="ti ti-check"></i></div>
-                  <div class="qo" data-q="0" onclick="pickQ(this)">1080p</div>
-                  <div class="qo" data-q="1" onclick="pickQ(this)">720p</div>
-                  <div class="qo" data-q="2" onclick="pickQ(this)">480p</div>
-                  <div class="qo" data-q="3" onclick="pickQ(this)">360p</div>
-                </div>
-              </div>
-              <button class="cb" onclick="toggleFS()"><i class="ti ti-maximize" id="fsicon"></i></button>
-            </div>
+            <span class="otxt" id="otxt">Play করুন</span>
           </div>
-        </div>`;
 
-      initPlayer(decodeURIComponent(src));
-    }
+          <!-- Spinner -->
+          <div id="spinner">
+            <i class="ti ti-loader-2 spinning"></i>
+          </div>
 
-    /* ---- Player Logic ---- */
-    let hls = null, playing = false, muted = false, manifestReady = false;
+          <!-- Buffer progress (thin bar above controls) -->
+          <div id="bufbar"><div id="bufprog"></div></div>
 
-    function initPlayer(streamSrc) {
-      const vid = document.getElementById('vid');
-      if (!vid) return;
+          <!-- Control Bar -->
+          <div id="cbar">
+            <button class="cb" onclick="togglePlay()" title="Play/Pause">
+              <i class="ti ti-player-play" id="picon"></i>
+            </button>
 
-      showSpinner();
-      setOtxt('লোড হচ্ছে...');
+            <span id="lbadge" class="off">LIVE</span>
 
-      if (Hls.isSupported()) {
-        hls = new Hls({ startLevel: -1, debug: false });
-        hls.loadSource(streamSrc);
-        hls.attachMedia(vid);
+            <div id="volwrap">
+              <button class="cb" onclick="toggleMute()" title="Mute">
+                <i class="ti ti-volume" id="vicon"></i>
+              </button>
+              <input type="range" id="vslider" min="0" max="100" value="80"
+                     oninput="onVol(this.value)" title="Volume">
+            </div>
 
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          manifestReady = true;
-          hideSpinner();
-          setOtxt('স্ট্রিম রেডি — play করুন');
-          buildLevelMenu();
-        });
+            <div class="sp"></div>
 
-        hls.on(Hls.Events.ERROR, (e, d) => {
-          if (d.fatal) {
-            hideSpinner();
-            setOtxt('স্ট্রিম লোড হয়নি। URL চেক করুন।');
-          }
-        });
-      } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari native HLS
-        vid.src = streamSrc;
-        vid.addEventListener('loadedmetadata', () => {
-          manifestReady = true;
-          hideSpinner();
-          setOtxt('স্ট্রিম রেডি — play করুন');
-        });
-        vid.addEventListener('error', () => {
-          hideSpinner();
-          setOtxt('স্ট্রিম লোড হয়নি।');
-        });
-      } else {
-        hideSpinner();
-        setOtxt('এই browser এ HLS সাপোর্ট নেই।');
-      }
+            <div id="qwrap">
+              <button id="qbtn" onclick="toggleQMenu()">Auto</button>
+              <div id="qmenu"></div>
+            </div>
 
-      vid.volume = 0.8;
-      vid.addEventListener('waiting', () => { if (playing) showSpinner(); });
-      vid.addEventListener('playing', () => { hideSpinner(); });
-    }
+            <button class="cb" onclick="toggleFS()" title="Fullscreen">
+              <i class="ti ti-maximize" id="fsicon"></i>
+            </button>
+          </div>
+        </div>
 
-    function setOtxt(t) {
-      const el = document.getElementById('otxt');
-      if (el) el.textContent = t;
-    }
+        <!-- Info bar (quality + speed) -->
+        <div id="infobar">
+          <div class="info-quality">Quality: <span id="curQ">—</span></div>
+          <div class="info-speed">Speed: <span id="curSpeed">—</span></div>
+          <button class="retry-btn" id="retryBtn" onclick="retryStream()">↺ Retry</button>
+        </div>
+      </div>`;
 
-    function buildLevelMenu() {
-      if (!hls) return;
-      const qm = document.getElementById('qmenu');
-      qm.innerHTML = '<div class="qo sel" data-q="auto" onclick="pickQ(this)">Auto <i class="ti ti-check"></i></div>';
-      hls.levels.forEach((l, i) => {
-        const name = l.height ? l.height + 'p' : 'Level ' + i;
-        qm.innerHTML += `<div class="qo" data-q="${i}" onclick="pickQ(this)">${name}</div>`;
+    initPlayer(SRC);
+    setupMobileControls();
+  }
+
+  /* ================================================================
+     PLAYER STATE
+  ================================================================ */
+  let hls        = null;
+  let playing    = false;
+  let muted      = false;
+  let retries    = 0;
+  const MAX_RETRY = 3;
+
+  /* ================================================================
+     INIT PLAYER — optimized HLS config
+  ================================================================ */
+  function initPlayer(src) {
+    const vid = document.getElementById('vid');
+    if (!vid) return;
+
+    setOtxt('লোড হচ্ছে...');
+    showSpinner();
+
+    if (Hls.isSupported()) {
+      hls = new Hls({
+        /* ---- Fast Load Config ---- */
+        autoStartLoad:       false,   // play click হলে তবেই load শুরু
+        startLevel:          -1,      // ABR: network-best quality auto
+        capLevelToPlayerSize: true,   // player size অনুযায়ী max quality cap
+        
+        /* ---- Buffer Tuning ---- */
+        maxBufferLength:     20,      // 20s buffer (IPTV-তে যথেষ্ট)
+        maxMaxBufferLength:  40,      // max 40s
+        maxBufferSize:       30 * 1000 * 1000, // 30MB
+        maxBufferHole:       0.5,
+        
+        /* ---- Latency & Stability ---- */
+        lowLatencyMode:      false,   // IPTV = stable > low latency
+        progressive:         false,
+        backBufferLength:    10,
+        
+        /* ---- Retry Config ---- */
+        manifestLoadingMaxRetry:  4,
+        manifestLoadingRetryDelay: 1000,
+        levelLoadingMaxRetry:     4,
+        fragLoadingMaxRetry:      6,
+        fragLoadingRetryDelay:    1000,
+
+        /* ---- ABR Bandwidth ---- */
+        abrEwmaDefaultEstimate:  500000,  // 500kbps initial estimate (conservative)
+        abrBandWidthFactor:      0.9,     // 90% of bandwidth (safety margin)
+        abrBandWidthUpFactor:    0.7,     // quality upgrade-এ conservative
+
+        debug: false,
       });
-    }
 
-    function pickQ(el) {
-      document.querySelectorAll('.qo').forEach(o => { o.classList.remove('sel'); const ic = o.querySelector('i'); if(ic) ic.remove(); });
-      el.classList.add('sel');
-      el.innerHTML += ' <i class="ti ti-check"></i>';
-      const q = el.dataset.q;
-      if (hls) { hls.currentLevel = q === 'auto' ? -1 : parseInt(q); hls.nextLevel = hls.currentLevel; }
-      document.getElementById('qbtn').textContent = q === 'auto' ? 'Auto' : el.textContent.replace('','').trim();
-      document.getElementById('qmenu').classList.remove('open');
-    }
+      hls.loadSource(src);
+      hls.attachMedia(vid);
 
-    function togglePlay() {
-      const vid = document.getElementById('vid');
-      if (!playing) {
-        if (!manifestReady) {
-          setOtxt('এখনও লোড হচ্ছে, একটু অপেক্ষা করুন...');
-          return;
+      hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => {
+        hideSpinner();
+        setOtxt('Play করুন');
+        buildQualityMenu(data.levels);
+        retries = 0;
+      });
+
+      hls.on(Hls.Events.LEVEL_SWITCHED, (e, data) => {
+        const lv = hls.levels[data.level];
+        if (lv) {
+          const q = lv.height ? lv.height + 'p' : 'Level ' + data.level;
+          document.getElementById('curQ').textContent = q;
+          document.getElementById('qbtn').textContent = q;
         }
-        showSpinner();
-        vid.play()
-          .then(() => {
-            hideSpinner(); hideOverlay(); playing = true;
-            document.getElementById('va').classList.add('on');
-            document.getElementById('picon').className  = 'ti ti-player-pause';
-            document.getElementById('bigicon').className = 'ti ti-player-pause';
-            document.getElementById('lbadge').classList.remove('off');
-          })
-          .catch(err => {
-            hideSpinner();
-            setOtxt('Play করা যায়নি: ' + err.message);
-          });
-      } else {
-        vid.pause(); playing = false;
-        document.getElementById('va').classList.remove('on');
-        document.getElementById('picon').className  = 'ti ti-player-play';
-        document.getElementById('bigicon').className = 'ti ti-player-play';
-        document.getElementById('lbadge').classList.add('off');
-        showOverlay();
-      }
+      });
+
+      // Buffer progress
+      hls.on(Hls.Events.FRAG_BUFFERED, (e, data) => {
+        updateBufBar();
+      });
+
+      // Bandwidth display
+      hls.on(Hls.Events.FRAG_LOADED, (e, data) => {
+        const bw = hls.bandwidthEstimate;
+        if (bw) {
+          const mbps = (bw / 1000000).toFixed(1);
+          document.getElementById('curSpeed').textContent = mbps + ' Mbps';
+        }
+      });
+
+      // Error recovery
+      hls.on(Hls.Events.ERROR, (e, data) => {
+        if (data.fatal) {
+          handleFatalError(data);
+        } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          // non-fatal network blip — hls.js handles internally
+        }
+      });
+
+    } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari native HLS
+      vid.src = src;
+      vid.addEventListener('loadedmetadata', () => {
+        hideSpinner();
+        setOtxt('Play করুন');
+        document.getElementById('curQ').textContent = 'Native';
+      });
+      vid.addEventListener('error', () => {
+        hideSpinner();
+        setOtxt('Stream load হয়নি।');
+        showRetry();
+      });
+    } else {
+      hideSpinner();
+      setOtxt('এই browser এ HLS সাপোর্ট নেই।');
     }
 
-    function toggleMute() {
-      const vid = document.getElementById('vid');
-      muted = !muted; vid.muted = muted;
-      document.getElementById('vslider').value = muted ? 0 : 80;
-      document.getElementById('vicon').className = muted ? 'ti ti-volume-off' : 'ti ti-volume';
+    vid.volume = 0.8;
+    vid.addEventListener('waiting', () => { if (playing) showSpinner(); });
+    vid.addEventListener('playing', () => { hideSpinner(); updateBufBar(); });
+    vid.addEventListener('stalled', () => { if (playing) showSpinner(); });
+  }
+
+  /* ================================================================
+     FATAL ERROR HANDLER — auto retry
+  ================================================================ */
+  function handleFatalError(data) {
+    hideSpinner();
+    if (retries < MAX_RETRY) {
+      retries++;
+      setOtxt(`Connection error — retry ${retries}/${MAX_RETRY}...`);
+      setTimeout(() => {
+        if (hls) {
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            hls.startLoad();
+          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+            hls.recoverMediaError();
+          } else {
+            hls.destroy();
+            initPlayer(SRC);
+          }
+        }
+      }, 2000 * retries);
+    } else {
+      setOtxt('Stream load হয়নি। নেটওয়ার্ক চেক করুন।');
+      showRetry();
+      playing = false;
+      updatePlayUI(false);
     }
+  }
 
-    function onVol(v) {
-      const vid = document.getElementById('vid');
-      vid.volume = parseInt(v)/100; muted = parseInt(v) === 0; vid.muted = muted;
-      document.getElementById('vicon').className = muted ? 'ti ti-volume-off' : (v < 50 ? 'ti ti-volume-2' : 'ti ti-volume');
+  function retryStream() {
+    retries = 0;
+    document.getElementById('retryBtn').classList.remove('show');
+    if (hls) { hls.destroy(); hls = null; }
+    playing = false;
+    updatePlayUI(false);
+    showOverlay();
+    initPlayer(SRC);
+  }
+
+  /* ================================================================
+     PLAY / PAUSE
+  ================================================================ */
+  function togglePlay() {
+    const vid = document.getElementById('vid');
+    if (!playing) {
+      showSpinner();
+      if (hls) hls.startLoad(); // এখনই bandwidth use শুরু
+      vid.play()
+        .then(() => {
+          hideSpinner();
+          hideOverlay();
+          playing = true;
+          updatePlayUI(true);
+        })
+        .catch(err => {
+          hideSpinner();
+          setOtxt('Play করা যায়নি। আবার চেষ্টা করুন।');
+          console.warn('Play error:', err);
+        });
+    } else {
+      vid.pause();
+      if (hls) hls.stopLoad(); // pause করলে bandwidth বন্ধ
+      playing = false;
+      updatePlayUI(false);
+      showOverlay();
     }
+  }
 
-    function toggleQMenu() { document.getElementById('qmenu').classList.toggle('open'); }
+  function updatePlayUI(isPlaying) {
+    const picon   = document.getElementById('picon');
+    const bigicon = document.getElementById('bigicon');
+    const lbadge  = document.getElementById('lbadge');
+    const va      = document.getElementById('va');
 
-    function toggleFS() {
-      const el = document.getElementById('pw');
-      if (!document.fullscreenElement) {
-        el.requestFullscreen && el.requestFullscreen();
-        document.getElementById('fsicon').className = 'ti ti-minimize';
-      } else {
-        document.exitFullscreen && document.exitFullscreen();
-        document.getElementById('fsicon').className = 'ti ti-maximize';
-      }
+    if (isPlaying) {
+      picon.className   = 'ti ti-player-pause';
+      bigicon.className = 'ti ti-player-pause';
+      lbadge.classList.remove('off');
+      va.classList.add('playing');
+    } else {
+      picon.className   = 'ti ti-player-play';
+      bigicon.className = 'ti ti-player-play';
+      lbadge.classList.add('off');
+      va.classList.remove('playing');
     }
+  }
 
-    function showOverlay() { const o = document.getElementById('overlay'); if(o) o.style.display = 'flex'; }
-    function hideOverlay() { const o = document.getElementById('overlay'); if(o) o.style.display = 'none'; }
-    function showSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'flex'; }
-    function hideSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'none'; }
+  /* ================================================================
+     VOLUME
+  ================================================================ */
+  function toggleMute() {
+    const vid = document.getElementById('vid');
+    muted = !muted;
+    vid.muted = muted;
+    document.getElementById('vslider').value = muted ? 0 : 80;
+    document.getElementById('vicon').className = muted ? 'ti ti-volume-off' : 'ti ti-volume';
+  }
 
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) { const fi = document.getElementById('fsicon'); if(fi) fi.className = 'ti ti-maximize'; }
+  function onVol(v) {
+    const vid = document.getElementById('vid');
+    const val = parseInt(v);
+    vid.volume = val / 100;
+    muted = val === 0;
+    vid.muted = muted;
+    document.getElementById('vicon').className =
+      muted ? 'ti ti-volume-off' : (val < 50 ? 'ti ti-volume-2' : 'ti ti-volume');
+  }
+
+  /* ================================================================
+     QUALITY MENU
+  ================================================================ */
+  function buildQualityMenu(levels) {
+    const qm = document.getElementById('qmenu');
+    let html = `<div class="qo sel" data-q="auto" onclick="pickQ(this)">Auto <i class="ti ti-check"></i></div>`;
+    levels.forEach((l, i) => {
+      const label = l.height ? l.height + 'p' : 'Level ' + i;
+      html += `<div class="qo" data-q="${i}" onclick="pickQ(this)">${label}</div>`;
     });
-    document.addEventListener('click', e => {
-      if (!e.target.closest('#qwrap')) { const qm = document.getElementById('qmenu'); if(qm) qm.classList.remove('open'); }
+    qm.innerHTML = html;
+  }
+
+  function pickQ(el) {
+    document.querySelectorAll('.qo').forEach(o => {
+      o.classList.remove('sel');
+      const ic = o.querySelector('i'); if (ic) ic.remove();
     });
+    el.classList.add('sel');
+    el.innerHTML += ' <i class="ti ti-check"></i>';
+    const q = el.dataset.q;
+    if (hls) {
+      hls.currentLevel = q === 'auto' ? -1 : parseInt(q);
+      hls.nextLevel    = hls.currentLevel;
+    }
+    const label = q === 'auto' ? 'Auto' : el.textContent.replace('✓','').trim();
+    document.getElementById('qbtn').textContent = label;
+    document.getElementById('qmenu').classList.remove('open');
+  }
+
+  function toggleQMenu() {
+    document.getElementById('qmenu').classList.toggle('open');
+  }
+
+  /* ================================================================
+     FULLSCREEN
+  ================================================================ */
+  function toggleFS() {
+    const el = document.getElementById('pw');
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen).call(el);
+      document.getElementById('fsicon').className = 'ti ti-minimize';
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
+      document.getElementById('fsicon').className = 'ti ti-maximize';
+    }
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      const fi = document.getElementById('fsicon');
+      if (fi) fi.className = 'ti ti-maximize';
+    }
+  });
+
+  /* ================================================================
+     BUFFER BAR
+  ================================================================ */
+  function updateBufBar() {
+    const vid = document.getElementById('vid');
+    const bar = document.getElementById('bufprog');
+    if (!vid || !bar || !vid.duration) return;
+    const buf = vid.buffered;
+    if (buf.length) {
+      const end = buf.end(buf.length - 1);
+      const pct = Math.min((end / vid.duration) * 100, 100);
+      bar.style.width = pct + '%';
+    }
+  }
+
+  /* ================================================================
+     MOBILE: tap to show/hide controls
+  ================================================================ */
+  function setupMobileControls() {
+    const va = document.getElementById('va');
+    if (!va) return;
+    let tapTimer;
+    va.addEventListener('touchstart', e => {
+      // don't intercept control bar taps
+      if (e.target.closest('#cbar') || e.target.closest('#overlay')) return;
+      e.preventDefault();
+      va.classList.toggle('tap-visible');
+      clearTimeout(tapTimer);
+      if (va.classList.contains('tap-visible')) {
+        tapTimer = setTimeout(() => va.classList.remove('tap-visible'), 3000);
+      }
+    }, { passive: false });
+  }
+
+  /* ================================================================
+     HELPERS
+  ================================================================ */
+  function setOtxt(t)    { const e = document.getElementById('otxt');    if(e) e.textContent = t; }
+  function showOverlay() { const o = document.getElementById('overlay'); if(o) o.classList.remove('hidden'); }
+  function hideOverlay() { const o = document.getElementById('overlay'); if(o) o.classList.add('hidden'); }
+  function showSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'flex'; }
+  function hideSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'none'; }
+  function showRetry()   { document.getElementById('retryBtn')?.classList.add('show'); }
+
+  // Close quality menu on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#qwrap')) {
+      document.getElementById('qmenu')?.classList.remove('open');
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space')  { e.preventDefault(); togglePlay(); }
+    if (e.code === 'KeyF')   toggleFS();
+    if (e.code === 'KeyM')   toggleMute();
+  });
   </script>
 </body>
 </html>
