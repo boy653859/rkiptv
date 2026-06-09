@@ -1,0 +1,469 @@
+/* =========================
+   ROOT
+========================= */
+:root {
+    --bg: #070b14;
+    --panel: #0d1322;
+    --panel2: #11192d;
+    --border: #1f2b45;
+    --text: #eef3ff;
+    --text2: #8a98b5;
+    --accent: #00c6ff;
+    --live: #ff2d55;
+
+    --font-d: 'Rajdhani', sans-serif;
+    --font-b: 'Nunito', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-b);
+    overflow: hidden;
+}
+
+/* =========================
+   HEADER
+========================= */
+.header {
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 16px;
+
+    background: rgba(7, 11, 20, .95);
+
+    border-bottom: 1px solid var(--border);
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    z-index: 100;
+}
+
+.back-btn {
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: var(--panel);
+
+    color: #fff;
+
+    cursor: pointer;
+
+    font-size: 18px;
+}
+
+.header-title {
+
+    flex: 1;
+
+    text-align: center;
+
+    font-family: var(--font-d);
+
+    font-size: 20px;
+    font-weight: 700;
+
+    letter-spacing: .5px;
+}
+
+/* =========================
+   PAGE
+========================= */
+
+.player-page {
+
+    margin-top: 56px;
+
+    min-height: calc(100vh - 56px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+}
+
+.player-wrap {
+
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+.video-area {
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: #000;
+
+    aspect-ratio: 16/9;
+
+    border: 1px solid var(--border);
+}
+
+#video {
+
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    background: #000;
+
+    object-fit: contain;
+}
+
+/* =========================
+   TOP OVERLAY
+========================= */
+
+.top-overlay {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    padding: 18px;
+
+    background:
+        linear-gradient(rgba(0, 0, 0, .85),
+            transparent);
+
+    transition: .2s;
+}
+
+.channel-title {
+
+    font-family: var(--font-d);
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* =========================
+   CENTER PLAY
+========================= */
+
+.center-overlay {
+
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.big-play {
+
+    width: 80px;
+    height: 80px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .15);
+
+    backdrop-filter: blur(8px);
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.big-play:hover {
+
+    transform: scale(1.05);
+}
+
+.big-play i {
+
+    font-size: 34px;
+}
+
+/* =========================
+   SPINNER
+========================= */
+
+.buffer-spinner {
+
+    position: absolute;
+    inset: 0;
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(0, 0, 0, .45);
+
+    z-index: 20;
+}
+
+.spinning {
+
+    font-size: 36px;
+
+    color: white;
+
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls {
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    padding: 14px;
+
+    background:
+        linear-gradient(transparent,
+            rgba(0, 0, 0, .92));
+
+    transition: .2s;
+}
+
+/* =========================
+   PROGRESS
+========================= */
+
+.progress-wrap {
+
+    margin-bottom: 12px;
+}
+
+#progressBar {
+
+    width: 100%;
+
+    accent-color: var(--accent);
+}
+
+/* =========================
+   BOTTOM BAR
+========================= */
+
+.bottom-controls {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 16px;
+}
+
+.left-controls,
+.right-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.ctrl-btn {
+
+    width: 40px;
+    height: 40px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, .08);
+
+    color: #fff;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.ctrl-btn:hover {
+
+    background: rgba(255, 255, 255, .18);
+}
+
+.ctrl-btn i {
+
+    font-size: 20px;
+}
+
+/* =========================
+   LIVE
+========================= */
+
+.live-badge {
+
+    padding: 5px 10px;
+
+    background: var(--live);
+
+    border-radius: 6px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+/* =========================
+   VOLUME
+========================= */
+
+.volume-wrap {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+#volumeSlider {
+
+    width: 80px;
+
+    accent-color: var(--accent);
+}
+
+/* =========================
+   SETTINGS
+========================= */
+
+.settings-menu {
+
+    position: absolute;
+
+    right: 15px;
+    bottom: 80px;
+
+    width: 160px;
+
+    background: var(--panel2);
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    display: none;
+
+    overflow: hidden;
+}
+
+.settings-title {
+
+    padding: 14px;
+
+    border-bottom: 1px solid var(--border);
+
+    font-weight: 700;
+}
+
+/* =========================
+   RETRY
+========================= */
+
+.retry-btn {
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: none;
+
+    border: none;
+
+    padding: 12px 18px;
+
+    border-radius: 12px;
+
+    background: var(--accent);
+
+    color: #000;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:768px) {
+
+    .channel-title {
+
+        font-size: 17px;
+    }
+
+    .ctrl-btn {
+
+        width: 36px;
+        height: 36px;
+    }
+
+    .ctrl-btn i {
+
+        font-size: 18px;
+    }
+
+    #volumeSlider {
+
+        width: 55px;
+    }
+
+    .big-play {
+
+        width: 65px;
+        height: 65px;
+    }
+
+}
