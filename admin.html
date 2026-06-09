@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RK IP TV — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+
+<body>
+
+  <!-- ===================== LOGIN ===================== -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-box">
+
+      <div class="login-logo">
+        <div class="logo-icon login-logo-icon">
+          <img src="assets/logo.png" alt="RK IPTV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+          <span class="logo-fallback" style="display:none">RK</span>
+        </div>
+        <span class="accent login-brand">RK IP TV</span>
+      </div>
+
+      <p class="login-subtitle">Admin Panel</p>
+
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="loginUser" placeholder="admin" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="loginPass" placeholder="••••••••" />
+        </div>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <button class="btn-primary full" onclick="doLogin()">Login →</button>
+
+      <a href="index.html" class="back-link">← Back to site</a>
+
+    </div>
+  </div>
+
+  <!-- ===================== ADMIN WRAP ===================== -->
+  <div class="admin-wrap" id="adminWrap" style="display:none">
+
+    <!-- MOBILE TOPBAR -->
+    <div class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-logo">
+        <div class="logo-icon sm">
+          <img src="assets/logo.png" alt="RK IPTV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+          <span class="logo-fallback" style="display:none">RK</span>
+        </div>
+        <span class="logo-text">RK <span class="accent">IP TV</span></span>
+      </div>
+      <button class="btn-icon-sm" onclick="doLogout()" title="Logout">⬅</button>
+    </div>
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="topbar-logo">
+          <div class="logo-icon sm">
+            <img src="assets/logo.png" alt="RK IPTV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+            <span class="logo-fallback" style="display:none">RK</span>
+          </div>
+          <span class="logo-text">RK <span class="accent">IP TV</span></span>
+        </div>
+        <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+      </div>
+
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-section-label">MENU</p>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="snav-item active" data-section="matches" onclick="switchSection('matches',this)">
+          <span class="snav-icon">🏆</span>
+          <span class="snav-text">Matches</span>
+        </a>
+        <a href="#" class="snav-item" data-section="channels" onclick="switchSection('channels',this)">
+          <span class="snav-icon">📺</span>
+          <span class="snav-text">Channels</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <a href="index.html" class="snav-item">
+          <span class="snav-icon">🌐</span>
+          <span class="snav-text">View Site</span>
+        </a>
+        <button class="snav-item logout-btn" onclick="doLogout()">
+          <span class="snav-icon">⬅</span>
+          <span class="snav-text">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+
+      <!-- =================== MATCHES =================== -->
+      <section class="section" id="section-matches">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Matches</h1>
+            <p class="section-sub" id="matchCount">Loading...</p>
+          </div>
+          <button class="btn-primary" onclick="openMatchModal()"><span>+</span> Add Match</button>
+        </div>
+        <div class="tab-bar" id="matchTabs">
+          <button class="tab active" data-sport="all" onclick="filterMatches('all',this)">All</button>
+          <button class="tab" data-sport="cricket" onclick="filterMatches('cricket',this)">🏏 Cricket</button>
+          <button class="tab" data-sport="football" onclick="filterMatches('football',this)">⚽ Football</button>
+          <button class="tab" data-sport="others" onclick="filterMatches('others',this)">🎯 Others</button>
+        </div>
+        <div class="card-grid" id="matchGrid">
+          <div class="empty-state"><div class="spinner"></div><p>Loading matches...</p></div>
+        </div>
+      </section>
+
+      <!-- =================== CHANNELS =================== -->
+      <section class="section" id="section-channels" style="display:none">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Channels</h1>
+            <p class="section-sub" id="channelCount">Loading...</p>
+          </div>
+          <button class="btn-primary" onclick="openChannelModal()"><span>+</span> Add Channel</button>
+        </div>
+        <div class="tab-bar" id="channelTabs">
+          <button class="tab active" data-cat="all" onclick="filterChannels('all',this)">All</button>
+          <button class="tab" data-cat="Sports" onclick="filterChannels('Sports',this)">⚽ Sports</button>
+          <button class="tab" data-cat="News" onclick="filterChannels('News',this)">📰 News</button>
+          <button class="tab" data-cat="Movies" onclick="filterChannels('Movies',this)">🎬 Movies</button>
+          <button class="tab" data-cat="Kids" onclick="filterChannels('Kids',this)">🧸 Kids</button>
+          <button class="tab" data-cat="Islamic" onclick="filterChannels('Islamic',this)">☪️ Islamic</button>
+          <button class="tab" data-cat="Others" onclick="filterChannels('Others',this)">📡 Others</button>
+        </div>
+        <div class="card-grid ch-grid" id="channelGrid">
+          <div class="empty-state"><div class="spinner"></div><p>Loading channels...</p></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =================== MATCH MODAL =================== -->
+  <div class="modal-overlay" id="matchModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="matchModalTitle">Add Match</h2>
+        <button class="modal-close" onclick="closeModal('matchModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sport <span class="req">*</span></label>
+            <select id="mSport">
+              <option value="cricket">🏏 Cricket</option>
+              <option value="football">⚽ Football</option>
+              <option value="others">🎯 Others</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tournament / Title <span class="req">*</span></label>
+          <input type="text" id="mTournament" placeholder="e.g. T20 World Cup" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Match Date</label>
+            <input type="date" id="mDate" />
+          </div>
+          <div class="form-group">
+            <label>Match Time</label>
+            <input type="time" id="mTime" />
+          </div>
+        </div>
+        <div class="teams-form">
+          <div class="team-box">
+            <div class="team-box-label">Team 1</div>
+            <div class="form-group">
+              <label>Name <span class="req">*</span></label>
+              <input type="text" id="mT1Name" placeholder="India" />
+            </div>
+            <div class="form-group">
+              <label>Logo URL</label>
+              <input type="url" id="mT1Logo" placeholder="https://..." />
+              <div class="logo-preview" id="prev1"></div>
+            </div>
+          </div>
+          <div class="vs-sep">VS</div>
+          <div class="team-box">
+            <div class="team-box-label">Team 2</div>
+            <div class="form-group">
+              <label>Name <span class="req">*</span></label>
+              <input type="text" id="mT2Name" placeholder="Australia" />
+            </div>
+            <div class="form-group">
+              <label>Logo URL</label>
+              <input type="url" id="mT2Logo" placeholder="https://..." />
+              <div class="logo-preview" id="prev2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Stream URL</label>
+          <input type="url" id="mStream" placeholder="https://stream.example.com/live" />
+        </div>
+        <div class="modal-error" id="matchError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal('matchModal')">Cancel</button>
+        <button class="btn-primary" onclick="saveMatch()">Save Match</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== CHANNEL MODAL =================== -->
+  <div class="modal-overlay" id="channelModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 id="chModalTitle">Add Channel</h2>
+        <button class="modal-close" onclick="closeModal('channelModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="chId" />
+        <div class="form-group">
+          <label>Channel Name <span class="req">*</span></label>
+          <input type="text" id="chName" placeholder="ESPN" />
+        </div>
+        <div class="form-group">
+          <label>Logo URL</label>
+          <input type="url" id="chLogo" placeholder="https://..." />
+          <div class="logo-preview" id="prevCh"></div>
+        </div>
+        <div class="form-group">
+          <label>Stream URL</label>
+          <input type="url" id="chStream" placeholder="https://stream.example.com/espn" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="chMeta">
+            <option value="Sports">⚽ Sports</option>
+            <option value="News">📰 News</option>
+            <option value="Movies">🎬 Movies</option>
+            <option value="Kids">🧸 Kids</option>
+            <option value="Islamic">☪️ Islamic</option>
+            <option value="Others">📡 Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="chLive" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+            <span class="toggle-label" id="chLiveLabel">Offline</span>
+          </div>
+        </div>
+        <div class="modal-error" id="chError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal('channelModal')">Cancel</button>
+        <button class="btn-primary" onclick="saveChannel()">Save Channel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== DELETE CONFIRM =================== -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal modal-xs">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-icon">🗑</div>
+        <p id="confirmMsg" class="confirm-msg">Are you sure?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn-danger" id="confirmOkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

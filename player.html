@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RK IP TV — Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --accent: #00c6ff;
+      --bg: #070e1c;
+      --bg-panel: #0e1628;
+      --border: #1e2f4a;
+      --text: #e8edf5;
+      --text2: #7a8fa8;
+      --live-bg: #e03030;
+      --font-d: 'Rajdhani', sans-serif;
+      --font-b: 'Nunito', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-b);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 20px;
+      height: 60px;
+      background: rgba(7,14,28,.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: .2s;
+      cursor: pointer;
+      background: none;
+      font-family: var(--font-b);
+    }
+    .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #0080ff);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .logo-icon img { width:100%; height:100%; object-fit:cover; }
+    .logo-icon .logo-fallback {
+      font-family: var(--font-d); font-weight:700; font-size:13px; color:#fff;
+      display:flex; align-items:center; justify-content:center; width:100%; height:100%;
+    }
+    .logo-text { font-family: var(--font-d); font-size:20px; font-weight:700; }
+    .logo-text .accent { color: var(--accent); }
+
+    .player-title {
+      flex: 1;
+      font-family: var(--font-d);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    /* CONTENT */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 30px;
+      gap: 16px;
+    }
+
+    .player-wrap {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* ERROR STATE */
+    .no-stream {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 60px 20px;
+      color: var(--text2);
+      text-align: center;
+    }
+    .no-stream i { font-size: 48px; color: var(--border); }
+    .no-stream p { font-size: 15px; font-weight: 600; }
+
+    /* PLAYER STYLES */
+    #pw {
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #ffffff18;
+      width: 100%;
+    }
+    #va {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      cursor: pointer;
+    }
+    #vid { width:100%; height:100%; display:block; background:#000; }
+
+    #overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; background: #000;
+    }
+    #bigplay {
+      width: 68px; height: 68px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background .2s, transform .15s;
+    }
+    #bigplay:hover { background: rgba(255,255,255,.18); transform: scale(1.06); }
+    #bigplay i { font-size: 28px; color: #fff; margin-left: 3px; }
+    .otxt { font-size: 13px; color: rgba(255,255,255,.45); letter-spacing: .04em; }
+
+    #cbar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 10px 14px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,.8));
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0; transition: opacity .2s; pointer-events: none;
+    }
+    #va:hover #cbar, #va.on #cbar { opacity: 1; pointer-events: all; }
+
+    .cb {
+      background: none; border: none; color: #fff; cursor: pointer;
+      padding: 5px; border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s; flex-shrink: 0;
+    }
+    .cb:hover { background: rgba(255,255,255,.14); }
+    .cb i { font-size: 19px; line-height: 1; }
+
+    #lbadge {
+      background: var(--live-bg); color: #fff;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .07em; padding: 3px 7px;
+      border-radius: 3px; flex-shrink: 0;
+      text-transform: uppercase; font-family: var(--font-d);
+    }
+    #lbadge.off { background: #444; }
+
+    #volwrap { display:flex; align-items:center; gap:6px; }
+    #vslider {
+      -webkit-appearance: none; appearance: none;
+      width: 72px; height: 3px; border-radius: 2px;
+      background: rgba(255,255,255,.25); outline: none; cursor: pointer;
+    }
+    #vslider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #fff; cursor: pointer;
+    }
+    .sp { flex: 1; }
+
+    #qwrap { position: relative; }
+    #qbtn {
+      background: rgba(255,255,255,.1);
+      border: .5px solid rgba(255,255,255,.2);
+      color: #fff; font-size: 11px; font-weight: 500;
+      padding: 4px 9px; border-radius: 4px;
+      cursor: pointer; letter-spacing: .04em; transition: background .15s;
+    }
+    #qbtn:hover { background: rgba(255,255,255,.2); }
+    #qmenu {
+      display: none; position: absolute;
+      bottom: 38px; right: 0;
+      background: #1c1c24;
+      border: .5px solid rgba(255,255,255,.15);
+      border-radius: 8px; overflow: hidden;
+      min-width: 120px; z-index: 20;
+    }
+    #qmenu.open { display: block; }
+    .qo {
+      padding: 9px 14px; font-size: 13px;
+      color: rgba(255,255,255,.7); cursor: pointer;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 6px;
+    }
+    .qo:hover { background: rgba(255,255,255,.07); }
+    .qo.sel { color: #4ade80; }
+
+    #spinner {
+      display: none; position: absolute; inset: 0;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.6);
+    }
+    #spinner i { font-size: 36px; color: #fff; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin .75s linear infinite; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 12px; }
+      .player-title { font-size: 14px; }
+      .content { padding: 12px 8px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-btn" onclick="history.back()">
+      <i class="ti ti-arrow-left"></i> Back
+    </button>
+    <a href="index.html" class="header-logo">
+      <div class="logo-icon">
+        <img src="assets/logo.png" alt="RK IP TV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+        <span class="logo-fallback" style="display:none">RK</span>
+      </div>
+    </a>
+    <div class="player-title" id="playerTitle">Live Stream</div>
+  </header>
+
+  <div class="content">
+    <div class="player-wrap" id="playerWrap">
+      <!-- Player inject হবে JS দিয়ে -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <script>
+    // URL থেকে src ও title নাও
+    const params = new URLSearchParams(window.location.search);
+    const src    = params.get('src')   || '';
+    const title  = params.get('title') || 'Live Stream';
+
+    document.getElementById('playerTitle').textContent = decodeURIComponent(title);
+    document.title = 'RK IP TV — ' + decodeURIComponent(title);
+
+    const wrap = document.getElementById('playerWrap');
+
+    if (!src) {
+      wrap.innerHTML = `
+        <div class="no-stream">
+          <i class="ti ti-player-off"></i>
+          <p>Stream URL পাওয়া যায়নি।</p>
+        </div>`;
+    } else {
+      wrap.innerHTML = `
+        <div id="pw">
+          <div id="va">
+            <video id="vid" playsinline></video>
+            <div id="overlay">
+              <div id="bigplay" onclick="togglePlay()">
+                <i class="ti ti-player-play" id="bigicon"></i>
+              </div>
+              <span class="otxt" id="otxt">লাইভ স্ট্রিম রেডি</span>
+            </div>
+            <div id="spinner"><i class="ti ti-loader-2 spinning"></i></div>
+            <div id="cbar">
+              <button class="cb" onclick="togglePlay()"><i class="ti ti-player-play" id="picon"></i></button>
+              <span id="lbadge" class="off">LIVE</span>
+              <div id="volwrap">
+                <button class="cb" onclick="toggleMute()"><i class="ti ti-volume" id="vicon"></i></button>
+                <input type="range" id="vslider" min="0" max="100" value="80" oninput="onVol(this.value)">
+              </div>
+              <div class="sp"></div>
+              <div id="qwrap">
+                <button id="qbtn" onclick="toggleQMenu()">Auto</button>
+                <div id="qmenu">
+                  <div class="qo sel" data-q="auto" onclick="pickQ(this)">Auto <i class="ti ti-check"></i></div>
+                  <div class="qo" data-q="0" onclick="pickQ(this)">1080p</div>
+                  <div class="qo" data-q="1" onclick="pickQ(this)">720p</div>
+                  <div class="qo" data-q="2" onclick="pickQ(this)">480p</div>
+                  <div class="qo" data-q="3" onclick="pickQ(this)">360p</div>
+                </div>
+              </div>
+              <button class="cb" onclick="toggleFS()"><i class="ti ti-maximize" id="fsicon"></i></button>
+            </div>
+          </div>
+        </div>`;
+
+      initPlayer(decodeURIComponent(src));
+    }
+
+    /* ---- Player Logic ---- */
+    let hls = null, playing = false, muted = false, manifestReady = false;
+
+    function initPlayer(streamSrc) {
+      const vid = document.getElementById('vid');
+      if (!vid) return;
+
+      showSpinner();
+      setOtxt('লোড হচ্ছে...');
+
+      if (Hls.isSupported()) {
+        hls = new Hls({ startLevel: -1, debug: false });
+        hls.loadSource(streamSrc);
+        hls.attachMedia(vid);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          manifestReady = true;
+          hideSpinner();
+          setOtxt('স্ট্রিম রেডি — play করুন');
+          buildLevelMenu();
+        });
+
+        hls.on(Hls.Events.ERROR, (e, d) => {
+          if (d.fatal) {
+            hideSpinner();
+            setOtxt('স্ট্রিম লোড হয়নি। URL চেক করুন।');
+          }
+        });
+      } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari native HLS
+        vid.src = streamSrc;
+        vid.addEventListener('loadedmetadata', () => {
+          manifestReady = true;
+          hideSpinner();
+          setOtxt('স্ট্রিম রেডি — play করুন');
+        });
+        vid.addEventListener('error', () => {
+          hideSpinner();
+          setOtxt('স্ট্রিম লোড হয়নি।');
+        });
+      } else {
+        hideSpinner();
+        setOtxt('এই browser এ HLS সাপোর্ট নেই।');
+      }
+
+      vid.volume = 0.8;
+      vid.addEventListener('waiting', () => { if (playing) showSpinner(); });
+      vid.addEventListener('playing', () => { hideSpinner(); });
+    }
+
+    function setOtxt(t) {
+      const el = document.getElementById('otxt');
+      if (el) el.textContent = t;
+    }
+
+    function buildLevelMenu() {
+      if (!hls) return;
+      const qm = document.getElementById('qmenu');
+      qm.innerHTML = '<div class="qo sel" data-q="auto" onclick="pickQ(this)">Auto <i class="ti ti-check"></i></div>';
+      hls.levels.forEach((l, i) => {
+        const name = l.height ? l.height + 'p' : 'Level ' + i;
+        qm.innerHTML += `<div class="qo" data-q="${i}" onclick="pickQ(this)">${name}</div>`;
+      });
+    }
+
+    function pickQ(el) {
+      document.querySelectorAll('.qo').forEach(o => { o.classList.remove('sel'); const ic = o.querySelector('i'); if(ic) ic.remove(); });
+      el.classList.add('sel');
+      el.innerHTML += ' <i class="ti ti-check"></i>';
+      const q = el.dataset.q;
+      if (hls) { hls.currentLevel = q === 'auto' ? -1 : parseInt(q); hls.nextLevel = hls.currentLevel; }
+      document.getElementById('qbtn').textContent = q === 'auto' ? 'Auto' : el.textContent.replace('','').trim();
+      document.getElementById('qmenu').classList.remove('open');
+    }
+
+    function togglePlay() {
+      const vid = document.getElementById('vid');
+      if (!playing) {
+        if (!manifestReady) {
+          setOtxt('এখনও লোড হচ্ছে, একটু অপেক্ষা করুন...');
+          return;
+        }
+        showSpinner();
+        vid.play()
+          .then(() => {
+            hideSpinner(); hideOverlay(); playing = true;
+            document.getElementById('va').classList.add('on');
+            document.getElementById('picon').className  = 'ti ti-player-pause';
+            document.getElementById('bigicon').className = 'ti ti-player-pause';
+            document.getElementById('lbadge').classList.remove('off');
+          })
+          .catch(err => {
+            hideSpinner();
+            setOtxt('Play করা যায়নি: ' + err.message);
+          });
+      } else {
+        vid.pause(); playing = false;
+        document.getElementById('va').classList.remove('on');
+        document.getElementById('picon').className  = 'ti ti-player-play';
+        document.getElementById('bigicon').className = 'ti ti-player-play';
+        document.getElementById('lbadge').classList.add('off');
+        showOverlay();
+      }
+    }
+
+    function toggleMute() {
+      const vid = document.getElementById('vid');
+      muted = !muted; vid.muted = muted;
+      document.getElementById('vslider').value = muted ? 0 : 80;
+      document.getElementById('vicon').className = muted ? 'ti ti-volume-off' : 'ti ti-volume';
+    }
+
+    function onVol(v) {
+      const vid = document.getElementById('vid');
+      vid.volume = parseInt(v)/100; muted = parseInt(v) === 0; vid.muted = muted;
+      document.getElementById('vicon').className = muted ? 'ti ti-volume-off' : (v < 50 ? 'ti ti-volume-2' : 'ti ti-volume');
+    }
+
+    function toggleQMenu() { document.getElementById('qmenu').classList.toggle('open'); }
+
+    function toggleFS() {
+      const el = document.getElementById('pw');
+      if (!document.fullscreenElement) {
+        el.requestFullscreen && el.requestFullscreen();
+        document.getElementById('fsicon').className = 'ti ti-minimize';
+      } else {
+        document.exitFullscreen && document.exitFullscreen();
+        document.getElementById('fsicon').className = 'ti ti-maximize';
+      }
+    }
+
+    function showOverlay() { const o = document.getElementById('overlay'); if(o) o.style.display = 'flex'; }
+    function hideOverlay() { const o = document.getElementById('overlay'); if(o) o.style.display = 'none'; }
+    function showSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'flex'; }
+    function hideSpinner() { const s = document.getElementById('spinner'); if(s) s.style.display = 'none'; }
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) { const fi = document.getElementById('fsicon'); if(fi) fi.className = 'ti ti-maximize'; }
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#qwrap')) { const qm = document.getElementById('qmenu'); if(qm) qm.classList.remove('open'); }
+    });
+  </script>
+</body>
+</html>

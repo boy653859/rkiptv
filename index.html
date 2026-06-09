@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RK IP TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="assets/logo.png" alt="RK IP TV" onerror="this.style.display='none';this.parentElement.querySelector('.logo-fallback').style.display='flex'">
+        <span class="logo-fallback" style="display:none">RK</span>
+      </div>
+      <span class="logo-text">RK <span class="accent">IP TV</span></span>
+    </div>
+    <nav class="desktop-nav">
+      <a href="index.html" class="nav-link active">Home</a>
+      <a href="channels.html" class="nav-link">All Channels</a>
+      <a href="settings.html" class="nav-link">Settings</a>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-layout">
+
+    <!-- LEFT: SPORTS PANEL -->
+    <section class="left-panel">
+      <h2 class="panel-title">Sports</h2>
+
+      <!-- Sport Category Filter -->
+      <div class="sports-filter">
+        <div class="sport-item active" data-sport="all">
+          <div class="sport-icon">🏆</div>
+          <span>All</span>
+        </div>
+        <div class="sport-item" data-sport="cricket">
+          <div class="sport-icon">🏏</div>
+          <span>Cricket</span>
+        </div>
+        <div class="sport-item" data-sport="football">
+          <div class="sport-icon">⚽</div>
+          <span>Football</span>
+        </div>
+        <div class="sport-item" data-sport="others">
+          <div class="sport-icon">🎯</div>
+          <span>Others</span>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="status-filter">
+        <button class="status-btn active" data-status="recent">Recent (<span class="count-recent">0</span>)</button>
+        <button class="status-btn" data-status="live">Live (<span class="count-live">0</span>)</button>
+        <button class="status-btn" data-status="upcoming">Upcoming (<span class="count-upcoming">0</span>)</button>
+        <button class="status-btn" data-status="all">All (<span class="count-all">0</span>)</button>
+      </div>
+
+      <!-- Match List -->
+      <div class="match-list" id="matchList">
+        <!-- Injected by JS -->
+      </div>
+    </section>
+
+    <!-- RIGHT: LIVE TV PANEL -->
+    <aside class="right-panel">
+      <h2 class="panel-title">Live TV</h2>
+      <div class="channel-list" id="channelList">
+        <!-- Injected by JS -->
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- BOTTOM NAV (Mobile) -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item active">
+      <span class="bnav-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="channels.html" class="bottom-nav-item">
+      <span class="bnav-icon">📺</span>
+      <span>Channels</span>
+    </a>
+    <a href="settings.html" class="bottom-nav-item">
+      <span class="bnav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
