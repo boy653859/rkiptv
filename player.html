@@ -34,153 +34,176 @@
 
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
+  <div class="player-wrap" id="playerWrap">
 
-    <button class="back-btn" onclick="history.back()">
+    <div class="video-area" id="videoArea">
 
-      <i class="ti ti-arrow-left"></i>
+      <!-- VIDEO -->
+      <video id="video" playsinline webkit-playsinline>
+      </video>
 
-    </button>
+      <!-- DOUBLE TAP -->
+      <div class="tap-zone tap-left" id="tapLeft">
+      </div>
 
-    <div class="header-title" id="pageTitle">
+      <div class="tap-zone tap-right" id="tapRight">
+      </div>
 
-      Live Stream
+      <!-- TOP OVERLAY -->
+      <div class="top-overlay" id="topOverlay">
 
-    </div>
+        <button class="back-btn" onclick="history.back()">
 
-  </header>
+          <i class="ti ti-arrow-left"></i>
 
-  <!-- CONTENT -->
-  <main class="player-page">
+        </button>
 
-    <div class="player-wrap" id="playerWrap">
+        <div class="channel-title" id="channelTitle">
 
-      <div class="video-area" id="videoArea">
-
-        <!-- VIDEO -->
-        <video id="video" playsinline webkit-playsinline>
-        </video>
-
-        <!-- TOP OVERLAY -->
-        <div class="top-overlay" id="topOverlay">
-
-          <div class="channel-title" id="channelTitle">
-
-            Live Stream
-
-          </div>
+          Live Stream
 
         </div>
 
-        <!-- CENTER PLAY -->
-        <div class="center-overlay" id="centerOverlay">
+      </div>
 
-          <button class="big-play" onclick="togglePlay()">
+      <!-- CENTER CONTROLS -->
+      <div class="center-controls" id="centerControls">
 
-            <i class="ti ti-player-play" id="bigIcon">
-            </i>
+        <button class="center-btn" onclick="seekBackward()">
 
-          </button>
+          <i class="ti ti-rewind-backward-10"></i>
 
-        </div>
+        </button>
 
-        <!-- BUFFER -->
-        <div class="buffer-spinner" id="bufferSpinner">
+        <button class="center-play" onclick="togglePlay()">
 
-          <i class="ti ti-loader-2 spinning">
+          <i class="ti ti-player-play" id="bigIcon">
           </i>
 
+        </button>
+
+        <button class="center-btn" onclick="seekForward()">
+
+          <i class="ti ti-rewind-forward-10"></i>
+
+        </button>
+
+      </div>
+
+      <!-- BUFFER -->
+      <div class="buffer-spinner" id="bufferSpinner">
+
+        <i class="ti ti-loader-2 spinning">
+        </i>
+
+      </div>
+
+      <!-- RETRY -->
+      <button class="retry-btn" id="retryBtn" onclick="retryStream()">
+
+        Retry
+
+      </button>
+
+      <!-- BOTTOM CONTROLS -->
+      <div class="controls" id="controls">
+
+        <!-- PROGRESS -->
+        <div class="progress-wrap">
+
+          <span id="currentTime">
+
+            00:00
+
+          </span>
+
+          <input type="range" id="progressBar" value="0">
+
+          <span id="duration">
+
+            00:00
+
+          </span>
+
         </div>
 
-        <!-- CONTROLS -->
-        <div class="controls" id="controls">
+        <!-- BOTTOM BAR -->
+        <div class="bottom-controls">
 
-          <!-- PROGRESS -->
-          <div class="progress-wrap">
+          <!-- LEFT -->
+          <div class="left-controls">
 
-            <input type="range" id="progressBar" value="0">
+            <button class="ctrl-btn" onclick="togglePlay()">
+
+              <i class="ti ti-player-play" id="playIcon">
+              </i>
+
+            </button>
+
+            <span class="live-badge">
+
+              LIVE
+
+            </span>
+
+            <span class="remain-time" id="remainTime">
+
+              --:--
+
+            </span>
 
           </div>
 
-          <!-- BOTTOM BAR -->
-          <div class="bottom-controls">
+          <!-- RIGHT -->
+          <div class="right-controls">
 
-            <!-- LEFT -->
-            <div class="left-controls">
+            <div class="volume-wrap">
 
-              <button class="ctrl-btn" onclick="seekBackward()">
+              <button class="ctrl-btn" onclick="toggleMute()">
 
-                <i class="ti ti-rewind-backward-10"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="togglePlay()">
-
-                <i class="ti ti-player-play" id="playIcon">
+                <i class="ti ti-volume" id="volumeIcon">
                 </i>
 
               </button>
 
-              <button class="ctrl-btn" onclick="seekForward()">
-
-                <i class="ti ti-rewind-forward-10"></i>
-
-              </button>
-
-              <span class="live-badge" id="liveBadge">
-
-                LIVE
-
-              </span>
+              <input type="range" min="0" max="100" value="100" id="volumeSlider">
 
             </div>
 
-            <!-- RIGHT -->
-            <div class="right-controls">
+            <button class="ctrl-btn" onclick="toggleSettings()">
 
-              <div class="volume-wrap">
+              <i class="ti ti-settings">
+              </i>
 
-                <button class="ctrl-btn" onclick="toggleMute()">
+            </button>
 
-                  <i class="ti ti-volume" id="volumeIcon">
-                  </i>
+            <button class="ctrl-btn" onclick="togglePiP()">
 
-                </button>
+              <i class="ti ti-picture-in-picture">
+              </i>
 
-                <input type="range" id="volumeSlider" min="0" max="100" value="80">
+            </button>
 
-              </div>
+            <button class="ctrl-btn" onclick="toggleFullscreen()">
 
-              <button class="ctrl-btn" onclick="toggleSettings()">
+              <i class="ti ti-maximize" id="fullscreenIcon">
+              </i>
 
-                <i class="ti ti-settings"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="togglePiP()">
-
-                <i class="ti ti-picture-in-picture"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="toggleFullscreen()">
-
-                <i class="ti ti-maximize" id="fullscreenIcon">
-                </i>
-
-              </button>
-
-            </div>
+            </button>
 
           </div>
 
         </div>
 
-        <!-- SETTINGS -->
-        <div class="settings-menu" id="settingsMenu">
+      </div>
 
-          <div class="settings-title">
+      <!-- SETTINGS -->
+      <div class="settings-popup" id="settingsPopup">
+
+        <!-- QUALITY -->
+        <div class="settings-block">
+
+          <div class="settings-head">
 
             Quality
 
@@ -188,24 +211,54 @@
 
           <div id="qualityList">
 
-            <!-- JS inject -->
+          </div>
+
+        </div>
+
+        <!-- SPEED -->
+        <div class="settings-block">
+
+          <div class="settings-head">
+
+            Playback Speed
+
+          </div>
+
+          <div class="speed-list">
+
+            <div class="speed-item" data-speed="0.5">
+
+              0.5x
+
+            </div>
+
+            <div class="speed-item" data-speed="1">
+
+              1x
+
+            </div>
+
+            <div class="speed-item" data-speed="1.5">
+
+              1.5x
+
+            </div>
+
+            <div class="speed-item" data-speed="2">
+
+              2x
+
+            </div>
 
           </div>
 
         </div>
 
-        <!-- RETRY -->
-        <button class="retry-btn" id="retryBtn" onclick="retryStream()">
-
-          Retry
-
-        </button>
-
       </div>
 
     </div>
 
-  </main>
+  </div>
 
 </body>
 
