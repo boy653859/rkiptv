@@ -1,24 +1,81 @@
 /* ==========================
-   RK IP TV PLAYER
+   GLOBAL
 ========================== */
 
 let hls = null;
-let playing = false;
 let controlsTimer = null;
 
-const video = document.getElementById("video");
+let reconnectCount = 0;
+let reconnectDelay = 2000;
 
-const params = new URLSearchParams(location.search);
+let spinnerTimer;
+
+const video = document.getElementById("video");
+const playerArea = document.getElementById("videoArea");
+
+const playIcon = document.getElementById("playIcon");
+const bigIcon = document.getElementById("bigIcon");
+
+const volumeIcon = document.getElementById("volumeIcon");
+const volumeSlider = document.getElementById("volumeSlider");
+
+const progressBar = document.getElementById("progressBar");
+
+const remainTime = document.getElementById("remainTime");
+
+const settingsMenu =
+    document.getElementById(
+        "settingsMenu"
+    );
+
+const qualityList =
+    document.getElementById(
+        "qualityList"
+    );
+
+const bufferSpinner =
+    document.getElementById(
+        "bufferSpinner"
+    );
+
+const pipBtn =
+    document.getElementById(
+        "pipBtn"
+    );
+
+const isMobile =
+
+    /Android|iPhone|iPad|iPod/i.test(
+        navigator.userAgent
+    );
+
+
+/* ==========================
+   URL PARAMS
+========================== */
+
+const params =
+    new URLSearchParams(
+        location.search
+    );
 
 const SRC =
     params.get("src")
-        ? decodeURIComponent(params.get("src"))
-        : "";
+        ?
+        decodeURIComponent(
+            params.get("src")
+        )
+        :
+        "";
 
 const TITLE =
     params.get("title")
-        ? decodeURIComponent(params.get("title"))
-        : "Live Stream";
+        ?
+        decodeURIComponent(
+            params.get("title")
+        )
+        :
+        "Live Stream";
 
 document.getElementById(
     "channelTitle"
@@ -31,796 +88,166 @@ document.getElementById(
 
 if (SRC) {
 
-    initPlayer(SRC);
+    initPlayer(
+        SRC
+    );
 
 }
 
 
 /* ==========================
-   HLS
+   HLS INIT
 ========================== */
 
 function initPlayer(src) {
 
     showSpinner();
 
-    if (Hls.isSupported()) {
+    if (
+
+        hls
+
+    ) {
+
+        hls.destroy();
+
+        hls = null;
+
+    }
+
+    if (
+
+        Hls.isSupported()
+
+    ) {
 
         hls = new Hls({
 
             autoStartLoad: true,
 
-            startLevel: -1,
+            startLevel: 0,
 
             capLevelToPlayerSize: true,
 
-            maxBufferLength: 20
+            maxBufferLength: 30,
+
+            maxMaxBufferLength: 60,
+
+            backBufferLength: 30,
+
+            liveSyncDurationCount: 3,
+
+            liveMaxLatencyDurationCount: 8,
+
+            lowLatencyMode: false,
+
+            enableWorker: true
 
         });
 
-        hls.loadSource(src);
+        hls.loadSource(
+            src
+        );
 
-        hls.attachMedia(video);
+        hls.attachMedia(
+            video
+        );
+
 
         hls.on(
+
             Hls.Events.MANIFEST_PARSED,
+
             () => {
 
-                hideSpinner();
+                reconnectCount = 0;
+
+                reconnectDelay = 2000;
 
                 buildQualityMenu();
 
+                video.play();
+
+                hideSpinner();
+
+                setTimeout(
+
+                    () => {
+
+                        if (
+
+                            hls
+
+                        ) {
+
+                            hls.currentLevel = -1;
+
+                        }
+
+                    },
+
+                    3000
+
+                );
+
             }
+
         );
 
+
         hls.on(
+
             Hls.Events.ERROR,
-            (event, data) => {
 
-                if (data.fatal) {
+            (
+                event,
+                data
+            ) => {
 
-                    showRetry();
+                if (
+
+                    data.fatal
+
+                ) {
+
+                    reconnectStream();
 
                 }
 
             }
+
         );
 
     }
 
-    else {
+    else if (
+
+        video.canPlayType(
+            "application/vnd.apple.mpegurl"
+        )
+
+    ) {
 
         video.src = src;
 
-    }
-
-    video.volume = 1;
-
-    bindVideoEvents();
-
-}
-
-
-/* ==========================
-   PLAY / PAUSE
-========================== */
-
-function togglePlay() {
-
-    if (!playing) {
-
         video.play();
 
-        playing = true;
-
-        setPlayIcons(true);
-
-        hideCenter();
-
-    }
-
-    else {
-
-        video.pause();
-
-        playing = false;
-
-        setPlayIcons(false);
-
-        showCenter();
-
-    }
-
-}
-
-
-function setPlayIcons(state) {
-
-    document.getElementById(
-        "playIcon"
-    ).className =
-        state
-            ?
-            "ti ti-player-pause"
-            :
-            "ti ti-player-play";
-
-    document.getElementById(
-        "bigIcon"
-    ).className =
-        state
-            ?
-            "ti ti-player-pause"
-            :
-            "ti ti-player-play";
-
-}
-
-
-/* ==========================
-   SEEK
-========================== */
-
-function seekBackward() {
-
-    video.currentTime -= 10;
-
-}
-
-function seekForward() {
-
-    video.currentTime += 10;
-
-}
-
-
-/* ==========================
-   TIME
-========================== */
-
-function bindVideoEvents() {
-
-    video.addEventListener(
-
-        "timeupdate",
-
-        () => {
-
-            updateProgress();
-
-            updateRemain();
-
-        }
-
-    );
-
-    video.addEventListener(
-
-        "waiting",
-
-        showSpinner
-
-    );
-
-    video.addEventListener(
-
-        "playing",
-
-        hideSpinner
-
-    );
-
-}
-
-
-function updateProgress() {
-
-    if (!video.duration)
-        return;
-
-    const progress =
-        (
-            video.currentTime
-            /
-            video.duration
-        ) * 100;
-
-    document.getElementById(
-        "progressBar"
-    ).value = progress;
-
-    document.getElementById(
-        "currentTime"
-    ).innerText =
-        formatTime(
-            video.currentTime
-        );
-
-    document.getElementById(
-        "duration"
-    ).innerText =
-        formatTime(
-            video.duration
-        );
-
-}
-
-
-function updateRemain() {
-
-    const remain =
-        video.duration
-        -
-        video.currentTime;
-
-    document.getElementById(
-        "remainTime"
-    ).innerText =
-        "-" +
-        formatTime(remain);
-
-}
-
-
-function formatTime(sec) {
-
-    sec = Math.floor(sec);
-
-    let m =
-        Math.floor(sec / 60);
-
-    let s =
-        sec % 60;
-
-    return (
-        m < 10
-            ? "0" + m
-            : m
-    )
-        +
-        ":"
-        +
-        (
-            s < 10
-                ? "0" + s
-                : s
-        );
-
-}
-
-
-/* ==========================
-   VOLUME
-========================== */
-
-document
-    .getElementById(
-        "volumeSlider"
-    )
-    .addEventListener(
-
-        "input",
-
-        function () {
-
-            video.volume =
-                this.value / 100;
-
-        }
-
-    );
-
-
-function toggleMute() {
-
-    video.muted =
-        !video.muted;
-
-}
-
-
-/* ==========================
-   SETTINGS
-========================== */
-
-function toggleSettings() {
-
-    const menu =
-        document.getElementById(
-            "settingsPopup"
-        );
-
-    menu.style.display =
-        menu.style.display === "block"
-            ?
-            "none"
-            :
-            "block";
-
-}
-
-
-/* ==========================
-   QUALITY
-========================== */
-
-function buildQualityMenu() {
-
-    const box =
-        document.getElementById(
-            "qualityList"
-        );
-
-    box.innerHTML = "";
-
-    addQuality(
-        box,
-        "Auto",
-        -1
-    );
-
-    hls.levels.forEach(
-
-        (
-            level,
-            index
-        ) => {
-
-            addQuality(
-
-                box,
-
-                level.height
-                + "p",
-
-                index
-
-            );
-
-        }
-
-    );
-
-}
-
-
-function addQuality(
-
-    box,
-    label,
-    value
-
-) {
-
-    const div =
-        document.createElement(
-            "div"
-        );
-
-    div.className =
-        "quality-item";
-
-    div.innerText =
-        label;
-
-    div.onclick =
-        () => {
-
-            hls.currentLevel =
-                value;
-
-        };
-
-    box.appendChild(div);
-
-}
-
-
-/* ==========================
-   FULLSCREEN
-========================== */
-
-function toggleFullscreen() {
-
-    const area =
-        document.getElementById(
-            "videoArea"
-        );
-
-    if (
-        !document.fullscreenElement
-    ) {
-
-        area.requestFullscreen();
-
-    }
-
-    else {
-
-        document.exitFullscreen();
-
     }
 
 }
 
 
 /* ==========================
-   PIP
+   RECONNECT
 ========================== */
-
-async function togglePiP() {
-
-    try {
-
-        if (
-            document.pictureInPictureElement
-        ) {
-
-            await
-                document.exitPictureInPicture();
-
-        }
-
-        else {
-
-            await
-                video.requestPictureInPicture();
-
-        }
-
-    }
-
-    catch (err) {
-
-        console.log(err);
-
-    }
-
-}
-
-
-/* ==========================
-   BUFFER
-========================== */
-
-function showSpinner() {
-
-    document.getElementById(
-        "bufferSpinner"
-    ).style.display =
-        "flex";
-
-}
-
-
-function hideSpinner() {
-
-    document.getElementById(
-        "bufferSpinner"
-    ).style.display =
-        "none";
-
-}
-
-
-/* ==========================
-   RETRY
-========================== */
-
-function showRetry() {
-
-    document.getElementById(
-        "retryBtn"
-    ).style.display =
-        "block";
-
-}
-
-
-function retryStream() {
-
-    location.reload();
-
-}
-
-
-/* ==========================
-   CENTER
-========================== */
-
-function hideCenter() {
-
-    document.getElementById(
-        "centerControls"
-    ).style.display =
-        "none";
-
-}
-
-
-function showCenter() {
-
-    document.getElementById(
-        "centerControls"
-    ).style.display =
-        "flex";
-
-}
-
-
-/* ==========================
-   AUTO HIDE CONTROLS
-========================== */
-
-const playerArea =
-    document.getElementById(
-        "videoArea"
-    );
-
-function showControls() {
-
-    playerArea.classList.remove(
-        "hide-ui"
-    );
-
-    document.body.style.cursor =
-        "default";
-
-    clearTimeout(
-        controlsTimer
-    );
-
-    if (playing) {
-
-        controlsTimer =
-            setTimeout(
-
-                () => {
-
-                    playerArea.classList.add(
-                        "hide-ui"
-                    );
-
-                    document.body.style.cursor =
-                        "none";
-
-                },
-
-                3000
-
-            );
-    }
-
-}
-
-playerArea.addEventListener(
-    "mousemove",
-    showControls
-);
-
-playerArea.addEventListener(
-    "touchstart",
-    showControls
-);
-
-showControls();
-
-
-/* ==========================
-   DOUBLE TAP SEEK
-========================== */
-
-let lastTapLeft = 0;
-let lastTapRight = 0;
-
-document
-    .getElementById(
-        "tapLeft"
-    )
-    .addEventListener(
-
-        "touchend",
-
-        () => {
-
-            const now =
-                Date.now();
-
-            if (
-                now - lastTapLeft
-                < 300
-            ) {
-
-                seekBackward();
-
-            }
-
-            lastTapLeft =
-                now;
-
-        }
-
-    );
-
-
-document
-    .getElementById(
-        "tapRight"
-    )
-    .addEventListener(
-
-        "touchend",
-
-        () => {
-
-            const now =
-                Date.now();
-
-            if (
-                now - lastTapRight
-                < 300
-            ) {
-
-                seekForward();
-
-            }
-
-            lastTapRight =
-                now;
-
-        }
-
-    );
-
-
-/* ==========================
-   KEYBOARD
-========================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "Space"
-        ) {
-
-            e.preventDefault();
-
-            togglePlay();
-
-        }
-
-        if (
-            e.code === "ArrowLeft"
-        ) {
-
-            seekBackward();
-
-        }
-
-        if (
-            e.code === "ArrowRight"
-        ) {
-
-            seekForward();
-
-        }
-
-        if (
-            e.code === "KeyF"
-        ) {
-
-            toggleFullscreen();
-
-        }
-
-        if (
-            e.code === "KeyP"
-        ) {
-
-            togglePiP();
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   PLAYBACK SPEED
-========================== */
-
-document
-    .querySelectorAll(
-        ".speed-item"
-    )
-    .forEach(
-
-        item => {
-
-            item.onclick = () => {
-
-                document
-                    .querySelectorAll(
-                        ".speed-item"
-                    )
-                    .forEach(
-
-                        x =>
-                            x.classList.remove(
-                                "active"
-                            )
-
-                    );
-
-                item.classList.add(
-                    "active"
-                );
-
-                video.playbackRate =
-                    parseFloat(
-                        item.dataset.speed
-                    );
-
-            };
-
-        }
-
-    );
-
-
-/* ==========================
-   AUTO LANDSCAPE
-========================== */
-
-video.addEventListener(
-
-    "play",
-
-    async () => {
-
-        if (
-            window.innerWidth
-            <
-            900
-        ) {
-
-            try {
-
-                await document
-                    .getElementById(
-                        "videoArea"
-                    )
-                    .requestFullscreen();
-
-            }
-
-            catch (err) { }
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   AUTO RECONNECT
-========================== */
-
-let reconnectCount = 0;
 
 function reconnectStream() {
 
     if (
-        reconnectCount >= 5
-    ) {
 
-        showRetry();
+        reconnectCount >= 6
+
+    ) {
 
         return;
 
@@ -828,7 +255,11 @@ function reconnectStream() {
 
     reconnectCount++;
 
-    if (hls) {
+    if (
+
+        hls
+
+    ) {
 
         hls.destroy();
 
@@ -844,294 +275,57 @@ function reconnectStream() {
 
         },
 
-        2000
+        reconnectDelay
 
     );
 
-}
+    reconnectDelay =
 
+        Math.min(
 
-if (hls) {
+            reconnectDelay * 2,
 
-    hls.on(
+            30000
 
-        Hls.Events.ERROR,
-
-        (
-            event,
-            data
-        ) => {
-
-            if (
-                data.fatal
-            ) {
-
-                reconnectStream();
-
-            }
-
-        }
-
-    );
+        );
 
 }
 
 
 /* ==========================
-   SETTINGS CLOSE
+   PLAY / PAUSE
 ========================== */
 
-document.addEventListener(
+function togglePlay() {
 
-    "click",
+    if (video.paused) {
 
-    e => {
-
-        if (
-
-            !e.target.closest(
-                ".settings-popup"
-            )
-
-            &&
-
-            !e.target.closest(
-                ".ti-settings"
-            )
-
-        ) {
-
-            document
-                .getElementById(
-                    "settingsPopup"
-                )
-                .style.display =
-                "none";
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   LONG PRESS
-========================== */
-
-let pressTimer;
-
-playerArea.addEventListener(
-
-    "touchstart",
-
-    () => {
-
-        pressTimer =
-            setTimeout(
-
-                () => {
-
-                    video.playbackRate =
-                        2;
-
-                },
-
-                600
-
-            );
-
-    }
-
-);
-
-
-playerArea.addEventListener(
-
-    "touchend",
-
-    () => {
-
-        clearTimeout(
-            pressTimer
-        );
-
-        if (
-            video.playbackRate
-            === 2
-        ) {
-
-            video.playbackRate =
-                1;
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   EXIT FULLSCREEN
-========================== */
-
-document.addEventListener(
-
-    "fullscreenchange",
-
-    () => {
-
-        if (
-
-            !document.fullscreenElement
-
-        ) {
-
-            document.body.style.cursor =
-                "default";
-
-            playerArea.classList.remove(
-                "hide-ui"
-            );
-
-        }
-
-    }
-);
-
-
-/* ==========================
-   SETTINGS ANIMATION
-========================== */
-
-function toggleSettings() {
-
-    const menu =
-        document.getElementById(
-            "settingsPopup"
-        );
-
-    if (
-        menu.classList.contains(
-            "open"
-        )
-    ) {
-
-        menu.classList.remove(
-            "open"
-        );
+        video.play();
 
     }
 
     else {
 
-        menu.classList.add(
-            "open"
-        );
+        video.pause();
 
     }
 
 }
 
-
-/* ==========================
-   SETTINGS AUTO CLOSE
-========================== */
-
-document.addEventListener(
-
-    "click",
-
-    e => {
-
-        if (
-
-            !e.target.closest(
-                "#settingsPopup"
-            )
-
-            &&
-
-            !e.target.closest(
-                ".ti-settings"
-            )
-
-        ) {
-
-            document
-                .getElementById(
-                    "settingsPopup"
-                )
-                .classList.remove(
-                    "open"
-                );
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   LOCK CONTROLS
-========================== */
-
-let controlsLocked = false;
-
-function toggleLock() {
-
-    controlsLocked =
-        !controlsLocked;
-
-    if (controlsLocked) {
-
-        playerArea.classList.add(
-            "locked"
-        );
-
-    }
-
-    else {
-
-        playerArea.classList.remove(
-            "locked"
-        );
-
-    }
-
-}
-
-
-/* ==========================
-   VOLUME BOOST
-========================== */
-
-video.volume = 1;
-
-video.muted = false;
-
-document.getElementById(
-    "volumeSlider"
-).value = 100;
-
-
-/* ==========================
-   HIDE CENTER BUTTON
-========================== */
 
 video.addEventListener(
 
-    "playing",
+    "play",
 
     () => {
 
-        document
-            .getElementById(
-                "centerControls"
-            )
-            .style.opacity =
-            "0";
+        playIcon.className =
+            "ti ti-player-pause";
+
+        bigIcon.className =
+            "ti ti-player-pause";
+
+        showControls();
 
     }
 
@@ -1144,12 +338,15 @@ video.addEventListener(
 
     () => {
 
-        document
-            .getElementById(
-                "centerControls"
-            )
-            .style.opacity =
-            "1";
+        playIcon.className =
+            "ti ti-player-play";
+
+        bigIcon.className =
+            "ti ti-player-play";
+
+        playerArea.classList.remove(
+            "hide-ui"
+        );
 
     }
 
@@ -1157,156 +354,117 @@ video.addEventListener(
 
 
 /* ==========================
-   SMOOTH BUTTON EFFECT
+   SEEK
 ========================== */
 
-document
-    .querySelectorAll(
-        ".ctrl-btn"
-    )
-    .forEach(
+function seekBackward() {
 
-        btn => {
+    video.currentTime = Math.max(
 
-            btn.addEventListener(
+        0,
 
-                "click",
-
-                () => {
-
-                    btn.animate(
-
-                        [
-
-                            {
-
-                                transform:
-                                    "scale(1)"
-
-                            },
-
-                            {
-
-                                transform:
-                                    "scale(.9)"
-
-                            },
-
-                            {
-
-                                transform:
-                                    "scale(1)"
-
-                            }
-
-                        ],
-
-                        {
-
-                            duration: 180
-
-                        }
-
-                    );
-
-                }
-
-            );
-
-        }
+        video.currentTime - 10
 
     );
+
+}
+
+
+function seekForward() {
+
+    if (
+
+        video.duration
+
+        &&
+
+        video.currentTime + 10 >
+
+        video.duration - 2
+
+    ) {
+
+        video.currentTime =
+            video.duration;
+
+    }
+
+    else {
+
+        video.currentTime += 10;
+
+    }
+
+}
 
 
 /* ==========================
-   AUTO HIDE SETTINGS
-========================== */
-
-let settingsTimer;
-
-document
-    .getElementById(
-        "settingsPopup"
-    )
-    .addEventListener(
-
-        "mouseenter",
-
-        () => {
-
-            clearTimeout(
-                settingsTimer
-            );
-
-        }
-
-    );
-
-
-document
-    .getElementById(
-        "settingsPopup"
-    )
-    .addEventListener(
-
-        "mouseleave",
-
-        () => {
-
-            settingsTimer =
-                setTimeout(
-
-                    () => {
-
-                        document
-                            .getElementById(
-                                "settingsPopup"
-                            )
-                            .classList.remove(
-                                "open"
-                            );
-
-                    },
-
-                    3000
-
-                );
-
-        }
-
-    );
-
-
-/* ==========================
-   ANDROID FULLSCREEN
+   PROGRESS
 ========================== */
 
 video.addEventListener(
 
-    "play",
+    "timeupdate",
 
-    async () => {
+    () => {
+
+        updateProgress();
+
+        updateRemain();
+
+    }
+
+);
+
+
+function updateProgress() {
+
+    if (
+
+        !video.duration
+
+    ) return;
+
+    progressBar.value =
+
+        (
+
+            video.currentTime
+
+            /
+
+            video.duration
+
+        ) * 100;
+
+}
+
+
+progressBar.addEventListener(
+
+    "input",
+
+    () => {
 
         if (
 
-            window.innerWidth
-            <
-
-            900
+            video.duration
 
         ) {
 
-            try {
+            video.currentTime =
 
-                await document
-                    .getElementById(
-                        "videoArea"
-                    )
-                    .requestFullscreen();
+                (
 
-            }
+                    progressBar.value
 
-            catch (err) { }
+                    / 100
+
+                )
+
+                *
+
+                video.duration;
 
         }
 
@@ -1316,8 +474,491 @@ video.addEventListener(
 
 
 /* ==========================
-   FULLSCREEN ICON
+   REMAIN TIME
 ========================== */
+
+function updateRemain() {
+
+    if (
+
+        !video.duration
+
+    ) return;
+
+    const remain =
+
+        video.duration
+
+        -
+
+        video.currentTime;
+
+    remainTime.innerText =
+
+        "-"
+
+        +
+
+        formatTime(
+            remain
+        );
+
+}
+
+
+function formatTime(sec) {
+
+    sec = Math.floor(sec);
+
+    let h =
+        Math.floor(sec / 3600);
+
+    let m =
+        Math.floor(
+            (sec % 3600) / 60
+        );
+
+    let s =
+        sec % 60;
+
+    if (
+
+        h > 0
+
+    ) {
+
+        return (
+
+            h < 10 ? "0" + h : h
+
+        )
+
+            +
+
+            ":"
+
+            +
+
+            (
+
+                m < 10 ? "0" + m : m
+
+            )
+
+            +
+
+            ":"
+
+            +
+
+            (
+
+                s < 10 ? "0" + s : s
+
+            );
+
+    }
+
+    return (
+
+        m < 10 ? "0" + m : m
+
+    )
+
+        +
+
+        ":"
+
+        +
+
+        (
+
+            s < 10 ? "0" + s : s
+
+        );
+
+}
+
+
+/* ==========================
+   VOLUME
+========================== */
+
+video.volume = 1;
+
+volumeSlider.value = 100;
+
+
+volumeSlider.addEventListener(
+
+    "input",
+
+    function () {
+
+        video.volume =
+            this.value / 100;
+
+        video.muted =
+            this.value == 0;
+
+        updateVolumeIcon();
+
+    }
+
+);
+
+
+function toggleMute() {
+
+    video.muted =
+        !video.muted;
+
+    updateVolumeIcon();
+
+}
+
+
+function updateVolumeIcon() {
+
+    if (
+
+        video.muted ||
+
+        video.volume === 0
+
+    ) {
+
+        volumeIcon.className =
+            "ti ti-volume-off";
+
+    }
+
+    else {
+
+        volumeIcon.className =
+            "ti ti-volume";
+
+    }
+
+}
+
+
+/* ==========================
+   BUFFER SPINNER
+========================== */
+
+video.addEventListener(
+
+    "waiting",
+
+    () => {
+
+        spinnerTimer =
+
+            setTimeout(
+
+                showSpinner,
+
+                500
+
+            );
+
+    }
+
+);
+
+
+video.addEventListener(
+
+    "playing",
+
+    () => {
+
+        clearTimeout(
+            spinnerTimer
+        );
+
+        hideSpinner();
+
+    }
+
+);
+
+
+function showSpinner() {
+
+    bufferSpinner.style.display =
+        "flex";
+
+}
+
+
+function hideSpinner() {
+
+    bufferSpinner.style.display =
+        "none";
+
+}
+
+
+/* ==========================
+   SAVE POSITION
+========================== */
+
+const STORAGE_KEY =
+    "player_" + SRC;
+
+
+function savePlayback() {
+
+    localStorage.setItem(
+
+        STORAGE_KEY,
+
+        video.currentTime
+
+    );
+
+}
+
+
+function restorePlayback() {
+
+    const saved =
+
+        localStorage.getItem(
+            STORAGE_KEY
+        );
+
+    if (
+
+        saved
+
+    ) {
+
+        video.currentTime =
+
+            parseFloat(
+                saved
+            );
+
+    }
+
+}
+
+
+video.addEventListener(
+
+    "loadedmetadata",
+
+    restorePlayback
+
+);
+
+
+/* ==========================
+   SAVE EVERY 5 SEC
+========================== */
+
+setInterval(
+
+    () => {
+
+        if (
+
+            !video.paused
+
+        ) {
+
+            savePlayback();
+
+        }
+
+    },
+
+    5000
+
+);
+
+
+/* ==========================
+   SETTINGS
+========================== */
+
+function toggleSettings() {
+
+    settingsMenu.style.display =
+
+        settingsMenu.style.display === "block"
+
+            ?
+
+            "none"
+
+            :
+
+            "block";
+
+}
+
+
+document.addEventListener(
+
+    "click",
+
+    e => {
+
+        if (
+
+            !e.target.closest("#settingsMenu")
+
+            &&
+
+            !e.target.closest(".ti-settings")
+
+        ) {
+
+            settingsMenu.style.display =
+
+                "none";
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   QUALITY MENU
+========================== */
+
+function buildQualityMenu() {
+
+    if (!hls) return;
+
+    qualityList.innerHTML = "";
+
+    addQualityItem(
+        "Auto",
+        -1
+    );
+
+    const uniqueHeights =
+
+        [...new Set(
+
+            hls.levels.map(
+
+                level => level.height
+
+            )
+
+        )]
+
+            .sort(
+                (a, b) => b - a
+            );
+
+
+    uniqueHeights.forEach(
+
+        height => {
+
+            const levelIndex =
+
+                hls.levels.findIndex(
+
+                    x =>
+
+                        x.height === height
+
+                );
+
+            addQualityItem(
+
+                height + "p",
+
+                levelIndex
+
+            );
+
+        }
+
+    );
+
+}
+
+
+function addQualityItem(
+
+    label,
+
+    level
+
+) {
+
+    const item =
+
+        document.createElement(
+            "div"
+        );
+
+    item.className =
+        "quality-item";
+
+    item.innerText =
+        label;
+
+    item.onclick = () => {
+
+        if (
+
+            hls
+
+        ) {
+
+            hls.currentLevel =
+                level;
+
+        }
+
+        settingsMenu.style.display =
+            "none";
+
+    };
+
+    qualityList.appendChild(
+        item
+    );
+
+}
+
+
+/* ==========================
+   FULLSCREEN
+========================== */
+
+function toggleFullscreen() {
+
+    if (
+
+        !document.fullscreenElement
+
+    ) {
+
+        playerArea.requestFullscreen();
+
+    }
+
+    else {
+
+        document.exitFullscreen();
+
+    }
+
+}
+
 
 document.addEventListener(
 
@@ -1326,6 +967,7 @@ document.addEventListener(
     () => {
 
         const icon =
+
             document.getElementById(
                 "fullscreenIcon"
             );
@@ -1354,7 +996,449 @@ document.addEventListener(
 
 
 /* ==========================
-   SHOW UI ON PAUSE
+   PiP
+========================== */
+
+async function togglePiP() {
+
+    if (
+
+        isMobile
+
+    ) return;
+
+    try {
+
+        if (
+
+            document.pictureInPictureElement
+
+        ) {
+
+            await document.exitPictureInPicture();
+
+        }
+
+        else {
+
+            await video.requestPictureInPicture();
+
+        }
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+    }
+
+}
+
+
+/* ==========================
+   BACK BUTTON
+========================== */
+
+function goBack() {
+
+    savePlayback();
+
+    if (hls) {
+
+        hls.destroy();
+
+    }
+
+    const backUrl =
+        sessionStorage.getItem(
+            "player_back"
+        );
+
+    console.log(backUrl);
+
+    if (backUrl) {
+
+        location.href = backUrl;
+
+    }
+
+    else {
+
+        history.back();
+
+    }
+
+}
+
+
+/* ==========================
+   ANDROID LANDSCAPE
+========================== */
+
+video.addEventListener(
+
+    "play",
+
+    async () => {
+
+        if (
+
+            isMobile
+
+        ) {
+
+            try {
+
+                await playerArea.requestFullscreen();
+
+            }
+
+            catch (err) { }
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   MEMORY CLEANUP
+========================== */
+
+document.addEventListener(
+
+    "visibilitychange",
+
+    () => {
+
+        if (
+
+            document.hidden
+
+        ) {
+
+            clearTimeout(
+                controlsTimer
+            );
+
+        }
+
+    }
+
+);
+
+
+window.addEventListener(
+
+    "beforeunload",
+
+    () => {
+
+        savePlayback();
+
+        if (
+
+            hls
+
+        ) {
+
+            hls.destroy();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   AUTO HIDE CONTROLS
+========================== */
+
+function showControls() {
+
+    playerArea.classList.remove(
+        "hide-ui"
+    );
+
+    if (!isMobile) {
+
+        document.body.style.cursor =
+            "default";
+
+    }
+
+    clearTimeout(
+        controlsTimer
+    );
+
+    if (
+
+        !video.paused
+
+    ) {
+
+        controlsTimer =
+
+            setTimeout(
+
+                () => {
+
+                    playerArea.classList.add(
+                        "hide-ui"
+                    );
+
+                    if (
+
+                        !isMobile
+
+                    ) {
+
+                        document.body.style.cursor =
+                            "none";
+
+                    }
+
+                },
+
+                3000
+
+            );
+
+    }
+
+}
+
+
+/* ==========================
+   DESKTOP HOVER
+========================== */
+
+if (
+
+    !isMobile
+
+) {
+
+    let moveTimer;
+
+    playerArea.addEventListener(
+
+        "mousemove",
+
+        () => {
+
+            clearTimeout(
+                moveTimer
+            );
+
+            moveTimer =
+
+                setTimeout(
+
+                    showControls,
+
+                    100
+
+                );
+
+        }
+
+    );
+
+}
+
+
+/* ==========================
+   MOBILE TAP
+========================== */
+
+if (
+
+    isMobile
+
+) {
+
+    playerArea.addEventListener(
+
+        "touchstart",
+
+        () => {
+
+            if (
+
+                playerArea.classList.contains(
+                    "hide-ui"
+                )
+
+            ) {
+
+                showControls();
+
+            }
+
+            else {
+
+                playerArea.classList.add(
+                    "hide-ui"
+                );
+
+            }
+
+        }
+
+    );
+
+}
+
+
+/* ==========================
+   DOUBLE TAP SEEK
+========================== */
+
+let lastTapLeft = 0;
+let lastTapRight = 0;
+
+playerArea.addEventListener(
+
+    "touchend",
+
+    e => {
+
+        const now =
+            Date.now();
+
+        if (
+
+            e.changedTouches[0].clientX
+
+            <
+
+            window.innerWidth / 2
+
+        ) {
+
+            if (
+
+                now - lastTapLeft < 300
+
+            ) {
+
+                seekBackward();
+
+            }
+
+            lastTapLeft = now;
+
+        }
+
+        else {
+
+            if (
+
+                now - lastTapRight < 300
+
+            ) {
+
+                seekForward();
+
+            }
+
+            lastTapRight = now;
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   KEYBOARD SHORTCUTS
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        switch (
+
+        e.code
+
+        ) {
+
+            case "Space":
+
+                e.preventDefault();
+
+                togglePlay();
+
+                break;
+
+            case "ArrowLeft":
+
+                seekBackward();
+
+                break;
+
+            case "ArrowRight":
+
+                seekForward();
+
+                break;
+
+            case "KeyM":
+
+                toggleMute();
+
+                break;
+
+            case "KeyF":
+
+                toggleFullscreen();
+
+                break;
+
+            case "KeyP":
+
+                if (
+
+                    !isMobile
+
+                ) {
+
+                    togglePiP();
+
+                }
+
+                break;
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   UI ON PLAY
+========================== */
+
+video.addEventListener(
+
+    "play",
+
+    showControls
+
+);
+
+
+/* ==========================
+   UI ON PAUSE
 ========================== */
 
 video.addEventListener(
@@ -1367,30 +1451,8 @@ video.addEventListener(
             "hide-ui"
         );
 
-    }
-
-);
-
-
-/* ==========================
-   SPACE
-========================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "Space"
-        ) {
-
-            e.preventDefault();
-
-            togglePlay();
-
-        }
+        document.body.style.cursor =
+            "default";
 
     }
 
@@ -1398,99 +1460,7 @@ document.addEventListener(
 
 
 /* ==========================
-   ARROWS
+   INITIAL STATE
 ========================== */
 
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "ArrowLeft"
-        ) {
-
-            seekBackward();
-
-        }
-
-        if (
-            e.code === "ArrowRight"
-        ) {
-
-            seekForward();
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   MUTE
-========================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "KeyM"
-        ) {
-
-            toggleMute();
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   FULLSCREEN
-========================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "KeyF"
-        ) {
-
-            toggleFullscreen();
-
-        }
-
-    }
-
-);
-
-
-/* ==========================
-   PiP
-========================== */
-
-document.addEventListener(
-
-    "keydown",
-
-    e => {
-
-        if (
-            e.code === "KeyP"
-        ) {
-
-            togglePiP();
-
-        }
-
-    }
-);
+showControls();

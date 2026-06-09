@@ -7,9 +7,9 @@
 
 const API = 'api.php';
 
-let allMatches  = [];
+let allMatches = [];
 let allChannels = [];
-let activeSport  = 'all';
+let activeSport = 'all';
 let activeStatus = 'recent';
 
 /* ----------------------------------------------------------------
@@ -21,14 +21,14 @@ async function loadData() {
       fetch(`${API}?type=matches`),
       fetch(`${API}?type=channels`)
     ]);
-    allMatches  = await mRes.json();
+    allMatches = await mRes.json();
     allChannels = await cRes.json();
-    if (!Array.isArray(allMatches))  allMatches  = [];
+    if (!Array.isArray(allMatches)) allMatches = [];
     if (!Array.isArray(allChannels)) allChannels = [];
   } catch (e) {
     console.error('API load failed, using fallback data', e);
     // Fallback — API না থাকলে hardcoded data দিয়ে চলবে
-    allMatches  = FALLBACK_MATCHES;
+    allMatches = FALLBACK_MATCHES;
     allChannels = FALLBACK_CHANNELS;
   }
   updateCounts();
@@ -42,13 +42,13 @@ async function loadData() {
 ---------------------------------------------------------------- */
 function filteredMatches(sport, status) {
   return allMatches.filter(m => {
-    const sportOk  = sport === 'all' || m.sport === sport;
+    const sportOk = sport === 'all' || m.sport === sport;
     const statusOk =
-      status === 'all'      ? true :
-      status === 'recent'   ? (m.status === 'recent' || m.status === 'live') :
-      status === 'upcoming' ? (m.status === 'upcoming' || m.status === 'recent') :
-      status === 'live'     ? m.status === 'live' :
-      m.status === status;
+      status === 'all' ? true :
+        status === 'recent' ? (m.status === 'recent' || m.status === 'live') :
+          status === 'upcoming' ? (m.status === 'upcoming' || m.status === 'recent') :
+            status === 'live' ? m.status === 'live' :
+              m.status === status;
     return sportOk && statusOk;
   });
 }
@@ -64,7 +64,7 @@ function updateCounts() {
    RENDER MATCHES
 ---------------------------------------------------------------- */
 function renderMatches() {
-  const list   = document.getElementById('matchList');
+  const list = document.getElementById('matchList');
   const toShow = filteredMatches(activeSport, activeStatus);
 
   if (!toShow.length) {
@@ -127,10 +127,10 @@ function renderChannels() {
   }
 
   list.innerHTML = allChannels.map(ch => {
-    const logo   = ch.logo || null;
+    const logo = ch.logo || null;
     const isLive = ch.is_live || ch.isLive || false;
-    const name   = ch.name || '';
-    const meta   = ch.meta || '';
+    const name = ch.name || '';
+    const meta = ch.meta || '';
 
     const clickAttr = (isLive && ch.stream_url)
       ? `onclick="goPlayer('${encodeURIComponent(ch.stream_url)}', '${encodeURIComponent(name)}')"`
@@ -140,8 +140,8 @@ function renderChannels() {
     <div class="channel-item" data-id="${ch.id}" ${clickAttr}>
       <div class="channel-logo">
         ${logo
-          ? `<img src="${logo}" alt="${name}" onerror="this.src='assets/logo.png'">`
-          : `<img src="assets/logo.png" alt="${name}">`}
+        ? `<img src="${logo}" alt="${name}" onerror="this.src='assets/logo.png'">`
+        : `<img src="assets/logo.png" alt="${name}">`}
       </div>
       <div class="channel-info">
         <div class="channel-name">${name}</div>
@@ -149,8 +149,8 @@ function renderChannels() {
       </div>
       <div class="channel-right">
         ${isLive
-          ? `<span class="ch-badge-live">LIVE</span>`
-          : `<span class="ch-badge-offline">OFFLINE</span>`}
+        ? `<span class="ch-badge-live">LIVE</span>`
+        : `<span class="ch-badge-offline">OFFLINE</span>`}
         <span class="channel-arrow">›</span>
       </div>
     </div>`;
@@ -161,9 +161,29 @@ function renderChannels() {
    PLAYER — stream url দিয়ে player page এ যাওয়া
 ---------------------------------------------------------------- */
 function goPlayer(encodedSrc, encodedTitle) {
-  const src   = decodeURIComponent(encodedSrc);
-  const title = decodeURIComponent(encodedTitle);
-  window.location.href = `player.html?src=${encodeURIComponent(src)}&title=${encodeURIComponent(title)}`;
+
+  const src =
+    decodeURIComponent(
+      encodedSrc
+    );
+
+  const title =
+    decodeURIComponent(
+      encodedTitle
+    );
+
+  sessionStorage.setItem(
+
+    "player_back",
+
+    location.href
+
+  );
+
+  location.href =
+
+    `player.html?src=${encodeURIComponent(src)}&title=${encodeURIComponent(title)}`;
+
 }
 
 /* ----------------------------------------------------------------
@@ -199,7 +219,7 @@ document.querySelectorAll('.bottom-nav-item').forEach(item => {
    PANEL HEIGHT SYNC
 ---------------------------------------------------------------- */
 function syncPanelHeight() {
-  const left  = document.querySelector('.left-panel');
+  const left = document.querySelector('.left-panel');
   const right = document.querySelector('.right-panel');
   if (!left || !right) return;
   right.style.height = left.offsetHeight + 'px';
@@ -211,21 +231,27 @@ window.addEventListener('resize', syncPanelHeight);
    FALLBACK DATA (API না থাকলে)
 ---------------------------------------------------------------- */
 const FALLBACK_MATCHES = [
-  { id:1, sport:'cricket', tournament:'T20 World Cup', status:'live', display_time:null, stream_url:null,
-    team1_name:'India',     team1_logo:'https://flagcdn.com/w80/in.png',
-    team2_name:'Australia', team2_logo:'https://flagcdn.com/w80/au.png' },
-  { id:2, sport:'football', tournament:'Champions League', status:'upcoming', display_time:'10 Jun | 09:30 PM', stream_url:null,
-    team1_name:'Real Madrid', team1_logo:'https://flagcdn.com/w80/es.png',
-    team2_name:'Man City',    team2_logo:'https://flagcdn.com/w80/gb-eng.png' },
-  { id:3, sport:'cricket', tournament:'Asia Cup', status:'recent', display_time:'08 Jun | 02:00 PM', stream_url:null,
-    team1_name:'Pakistan',   team1_logo:'https://flagcdn.com/w80/pk.png',
-    team2_name:'Bangladesh', team2_logo:'https://flagcdn.com/w80/bd.png' },
+  {
+    id: 1, sport: 'cricket', tournament: 'T20 World Cup', status: 'live', display_time: null, stream_url: null,
+    team1_name: 'India', team1_logo: 'https://flagcdn.com/w80/in.png',
+    team2_name: 'Australia', team2_logo: 'https://flagcdn.com/w80/au.png'
+  },
+  {
+    id: 2, sport: 'football', tournament: 'Champions League', status: 'upcoming', display_time: '10 Jun | 09:30 PM', stream_url: null,
+    team1_name: 'Real Madrid', team1_logo: 'https://flagcdn.com/w80/es.png',
+    team2_name: 'Man City', team2_logo: 'https://flagcdn.com/w80/gb-eng.png'
+  },
+  {
+    id: 3, sport: 'cricket', tournament: 'Asia Cup', status: 'recent', display_time: '08 Jun | 02:00 PM', stream_url: null,
+    team1_name: 'Pakistan', team1_logo: 'https://flagcdn.com/w80/pk.png',
+    team2_name: 'Bangladesh', team2_logo: 'https://flagcdn.com/w80/bd.png'
+  },
 ];
 const FALLBACK_CHANNELS = [
-  { id:1, name:'ESPN',       logo:null, meta:'Sports', is_live:true,  stream_url:null },
-  { id:2, name:'Sky Sports', logo:null, meta:'Sports', is_live:true,  stream_url:null },
-  { id:3, name:'Sony Sports',logo:null, meta:'Sports', is_live:false, stream_url:null },
-  { id:4, name:'Star Sports', logo:null, meta:'Sports', is_live:true, stream_url:null },
+  { id: 1, name: 'ESPN', logo: null, meta: 'Sports', is_live: true, stream_url: null },
+  { id: 2, name: 'Sky Sports', logo: null, meta: 'Sports', is_live: true, stream_url: null },
+  { id: 3, name: 'Sony Sports', logo: null, meta: 'Sports', is_live: false, stream_url: null },
+  { id: 4, name: 'Star Sports', logo: null, meta: 'Sports', is_live: true, stream_url: null },
 ];
 
 /* ----------------------------------------------------------------

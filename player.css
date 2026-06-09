@@ -1,126 +1,53 @@
 /* =========================
    ROOT
 ========================= */
+
 :root {
-    --bg: #070b14;
-    --panel: #0d1322;
-    --panel2: #11192d;
-    --border: #1f2b45;
-    --text: #eef3ff;
-    --text2: #8a98b5;
+
+    --bg: #000;
+    --text: #fff;
+    --border: rgba(255, 255, 255, .15);
+    --glass: rgba(255, 255, 255, .12);
     --accent: #00c6ff;
-    --live: #ff2d55;
 
     --font-d: 'Rajdhani', sans-serif;
     --font-b: 'Nunito', sans-serif;
+
 }
 
 * {
+
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
 }
 
 body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-b);
+
+    background: #000;
     overflow: hidden;
-}
-
-/* =========================
-   HEADER
-========================= */
-.header {
-    height: 56px;
-
-    display: flex;
-    align-items: center;
-
-    padding: 0 16px;
-
-    background: rgba(7, 11, 20, .95);
-
-    border-bottom: 1px solid var(--border);
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-
-    z-index: 100;
-}
-
-.back-btn {
-    width: 38px;
-    height: 38px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: var(--panel);
-
     color: #fff;
+    font-family: var(--font-b);
 
-    cursor: pointer;
-
-    font-size: 18px;
 }
 
-.header-title {
-
-    flex: 1;
-
-    text-align: center;
-
-    font-family: var(--font-d);
-
-    font-size: 20px;
-    font-weight: 700;
-
-    letter-spacing: .5px;
-}
 
 /* =========================
-   PAGE
-========================= */
-
-.player-page {
-
-    margin-top: 56px;
-
-    min-height: calc(100vh - 56px);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
-}
-
-.player-wrap {
-
-    width: 100%;
-    max-width: 1100px;
-}
-
-/* =========================
-   VIDEO
+   VIDEO AREA
 ========================= */
 
 .video-area {
 
     position: relative;
 
-    overflow: hidden;
-
-    border-radius: 18px;
+    width: 100vw;
+    height: 100vh;
 
     background: #000;
 
-    aspect-ratio: 16/9;
+    overflow: hidden;
 
-    border: 1px solid var(--border);
 }
 
 #video {
@@ -128,15 +55,15 @@ body {
     width: 100%;
     height: 100%;
 
+    object-fit: contain;
+
     display: block;
 
-    background: #000;
-
-    object-fit: contain;
 }
 
+
 /* =========================
-   TOP OVERLAY
+   TOP
 ========================= */
 
 .top-overlay {
@@ -147,100 +74,132 @@ body {
     left: 0;
     right: 0;
 
-    padding: 18px;
+    z-index: 1000;
+
+    padding: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
 
     background:
-        linear-gradient(rgba(0, 0, 0, .85),
-            transparent);
+        linear-gradient(
+            rgba(0,0,0,.85),
+            transparent
+        );
 
-    transition: .2s;
+    transition: .3s;
+
+}
+
+.top-btn {
+
+    position: relative;
+
+    z-index: 1100;
+
+    width: 42px;
+    height: 42px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: var(--glass);
+
+    color: #fff;
+
+    cursor: pointer;
+
+}
+
+.top-btn i {
+
+    font-size: 22px;
+
 }
 
 .channel-title {
 
     font-family: var(--font-d);
 
-    font-size: 22px;
+    font-size: 24px;
+
     font-weight: 700;
+
 }
+
 
 /* =========================
-   CENTER PLAY
+   CENTER
 ========================= */
 
-.center-overlay {
+.center-controls {
 
     position: absolute;
+
     inset: 0;
 
+    z-index: 900;
+
     display: flex;
+
     justify-content: center;
     align-items: center;
+
+    gap: 30px;
+
+    transition: .3s;
+
 }
 
-.big-play {
+.center-btn,
+.center-play {
+
+    border: none;
+
+    background: rgba(255, 255, 255, .12);
+
+    color: #fff;
+
+    backdrop-filter: blur(12px);
+
+    cursor: pointer;
+
+}
+
+.center-btn {
+
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+
+}
+
+.center-play {
 
     width: 80px;
     height: 80px;
 
-    border: none;
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, .15);
-
-    backdrop-filter: blur(8px);
-
-    color: white;
-
-    cursor: pointer;
-
-    transition: .2s;
 }
 
-.big-play:hover {
+.center-btn i {
 
-    transform: scale(1.05);
+    font-size: 28px;
+
 }
 
-.big-play i {
+.center-play i {
 
     font-size: 34px;
+
 }
 
-/* =========================
-   SPINNER
-========================= */
-
-.buffer-spinner {
-
-    position: absolute;
-    inset: 0;
-
-    display: none;
-
-    justify-content: center;
-    align-items: center;
-
-    background: rgba(0, 0, 0, .45);
-
-    z-index: 20;
-}
-
-.spinning {
-
-    font-size: 36px;
-
-    color: white;
-
-    animation: spin .8s linear infinite;
-}
-
-@keyframes spin {
-
-    to {
-        transform: rotate(360deg);
-    }
-}
 
 /* =========================
    CONTROLS
@@ -254,14 +213,20 @@ body {
     right: 0;
     bottom: 0;
 
-    padding: 14px;
+    z-index: 1000;
+
+    padding: 20px;
 
     background:
-        linear-gradient(transparent,
-            rgba(0, 0, 0, .92));
+        linear-gradient(
+            transparent,
+            rgba(0,0,0,.92)
+        );
 
-    transition: .2s;
+    transition: .3s;
+
 }
+
 
 /* =========================
    PROGRESS
@@ -269,7 +234,8 @@ body {
 
 .progress-wrap {
 
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+
 }
 
 #progressBar {
@@ -277,10 +243,12 @@ body {
     width: 100%;
 
     accent-color: var(--accent);
+
 }
 
+
 /* =========================
-   BOTTOM BAR
+   BOTTOM
 ========================= */
 
 .bottom-controls {
@@ -291,7 +259,6 @@ body {
 
     align-items: center;
 
-    gap: 16px;
 }
 
 .left-controls,
@@ -301,54 +268,40 @@ body {
 
     align-items: center;
 
-    gap: 10px;
+    gap: 12px;
+
 }
+
+
+/* =========================
+   BUTTONS
+========================= */
 
 .ctrl-btn {
 
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
 
     border: none;
+
     border-radius: 12px;
 
-    background: rgba(255, 255, 255, .08);
+    background: var(--glass);
 
     color: #fff;
 
     cursor: pointer;
 
-    transition: .2s;
-}
+    backdrop-filter: blur(10px);
 
-.ctrl-btn:hover {
-
-    background: rgba(255, 255, 255, .18);
 }
 
 .ctrl-btn i {
 
     font-size: 20px;
+
 }
 
-/* =========================
-   LIVE
-========================= */
-
-.live-badge {
-
-    padding: 5px 10px;
-
-    background: var(--live);
-
-    border-radius: 6px;
-
-    font-size: 12px;
-
-    font-weight: 800;
-
-    letter-spacing: 1px;
-}
 
 /* =========================
    VOLUME
@@ -360,15 +313,18 @@ body {
 
     align-items: center;
 
-    gap: 8px;
+    gap: 10px;
+
 }
 
 #volumeSlider {
 
-    width: 80px;
+    width: 90px;
 
     accent-color: var(--accent);
+
 }
+
 
 /* =========================
    SETTINGS
@@ -378,92 +334,166 @@ body {
 
     position: absolute;
 
-    right: 15px;
-    bottom: 80px;
+    right: 20px;
+    bottom: 95px;
 
-    width: 160px;
-
-    background: var(--panel2);
-
-    border: 1px solid var(--border);
-
-    border-radius: 14px;
+    width: 180px;
 
     display: none;
 
     overflow: hidden;
+
+    border-radius: 18px;
+
+    background: rgba(20, 20, 20, .95);
+
+    border: 1px solid var(--border);
+
+    backdrop-filter: blur(15px);
+
 }
 
 .settings-title {
 
-    padding: 14px;
+    padding: 15px;
+
+    font-weight: 700;
 
     border-bottom: 1px solid var(--border);
 
-    font-weight: 700;
 }
 
+.quality-item {
+
+    padding: 14px 16px;
+
+    cursor: pointer;
+
+}
+
+.quality-item:hover {
+
+    background: rgba(255, 255, 255, .08);
+
+}
+
+
 /* =========================
-   RETRY
+   BUFFER
 ========================= */
 
-.retry-btn {
+.buffer-spinner {
 
     position: absolute;
 
-    top: 50%;
-    left: 50%;
+    inset: 0;
 
-    transform: translate(-50%, -50%);
+    z-index: 800;
 
     display: none;
 
-    border: none;
+    justify-content: center;
+    align-items: center;
 
-    padding: 12px 18px;
+    background: rgba(0,0,0,.45);
 
-    border-radius: 12px;
-
-    background: var(--accent);
-
-    color: #000;
-
-    font-weight: 700;
-
-    cursor: pointer;
 }
+
+.spinning {
+
+    font-size: 40px;
+
+    animation: spin .8s linear infinite;
+
+}
+
+@keyframes spin {
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
+}
+
+
+/* =========================
+   AUTO HIDE
+========================= */
+
+.hide-ui .top-overlay,
+.hide-ui .controls,
+.hide-ui .center-controls {
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
 
 /* =========================
    MOBILE
 ========================= */
 
-@media(max-width:768px) {
+@media (max-width:768px) {
 
     .channel-title {
 
-        font-size: 17px;
+        font-size: 18px;
+
+    }
+
+    .center-play {
+
+        width: 70px;
+        height: 70px;
+
+    }
+
+    .center-btn {
+
+        width: 55px;
+        height: 55px;
+
+    }
+
+    .center-play i {
+
+        font-size: 28px;
+
+    }
+
+    .center-btn i {
+
+        font-size: 24px;
+
     }
 
     .ctrl-btn {
 
-        width: 36px;
-        height: 36px;
-    }
+        width: 38px;
+        height: 38px;
 
-    .ctrl-btn i {
-
-        font-size: 18px;
     }
 
     #volumeSlider {
 
-        width: 55px;
+        display: none;
+
     }
 
-    .big-play {
+}
 
-        width: 65px;
-        height: 65px;
+/* Android এ PiP button hide */
+
+@media (max-width:768px) {
+
+    #pipBtn {
+
+        display: none;
+
     }
 
 }

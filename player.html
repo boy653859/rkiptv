@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>RK IP TV — Player</title>
+  <title>RK IPTV Player</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;600;700&display=swap"
     rel="stylesheet">
 
   <!-- Tabler Icons -->
@@ -34,178 +34,157 @@
 
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
+  <div class="video-area" id="videoArea">
 
-    <button class="back-btn" onclick="history.back()">
+    <!-- VIDEO -->
+    <video id="video" playsinline webkit-playsinline>
+    </video>
 
-      <i class="ti ti-arrow-left"></i>
+    <!-- TOP -->
+    <div class="top-overlay">
 
-    </button>
+      <button class="top-btn" onclick="goBack()">
 
-    <div class="header-title" id="pageTitle">
+        <i class="ti ti-arrow-left"></i>
 
-      Live Stream
+      </button>
 
-    </div>
+      <div class="channel-title" id="channelTitle">
 
-  </header>
-
-  <!-- CONTENT -->
-  <main class="player-page">
-
-    <div class="player-wrap" id="playerWrap">
-
-      <div class="video-area" id="videoArea">
-
-        <!-- VIDEO -->
-        <video id="video" playsinline webkit-playsinline>
-        </video>
-
-        <!-- TOP OVERLAY -->
-        <div class="top-overlay" id="topOverlay">
-
-          <div class="channel-title" id="channelTitle">
-
-            Live Stream
-
-          </div>
-
-        </div>
-
-        <!-- CENTER PLAY -->
-        <div class="center-overlay" id="centerOverlay">
-
-          <button class="big-play" onclick="togglePlay()">
-
-            <i class="ti ti-player-play" id="bigIcon">
-            </i>
-
-          </button>
-
-        </div>
-
-        <!-- BUFFER -->
-        <div class="buffer-spinner" id="bufferSpinner">
-
-          <i class="ti ti-loader-2 spinning">
-          </i>
-
-        </div>
-
-        <!-- CONTROLS -->
-        <div class="controls" id="controls">
-
-          <!-- PROGRESS -->
-          <div class="progress-wrap">
-
-            <input type="range" id="progressBar" value="0">
-
-          </div>
-
-          <!-- BOTTOM BAR -->
-          <div class="bottom-controls">
-
-            <!-- LEFT -->
-            <div class="left-controls">
-
-              <button class="ctrl-btn" onclick="seekBackward()">
-
-                <i class="ti ti-rewind-backward-10"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="togglePlay()">
-
-                <i class="ti ti-player-play" id="playIcon">
-                </i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="seekForward()">
-
-                <i class="ti ti-rewind-forward-10"></i>
-
-              </button>
-
-              <span class="live-badge" id="liveBadge">
-
-                LIVE
-
-              </span>
-
-            </div>
-
-            <!-- RIGHT -->
-            <div class="right-controls">
-
-              <div class="volume-wrap">
-
-                <button class="ctrl-btn" onclick="toggleMute()">
-
-                  <i class="ti ti-volume" id="volumeIcon">
-                  </i>
-
-                </button>
-
-                <input type="range" id="volumeSlider" min="0" max="100" value="80">
-
-              </div>
-
-              <button class="ctrl-btn" onclick="toggleSettings()">
-
-                <i class="ti ti-settings"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="togglePiP()">
-
-                <i class="ti ti-picture-in-picture"></i>
-
-              </button>
-
-              <button class="ctrl-btn" onclick="toggleFullscreen()">
-
-                <i class="ti ti-maximize" id="fullscreenIcon">
-                </i>
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <!-- SETTINGS -->
-        <div class="settings-menu" id="settingsMenu">
-
-          <div class="settings-title">
-
-            Quality
-
-          </div>
-
-          <div id="qualityList">
-
-            <!-- JS inject -->
-
-          </div>
-
-        </div>
-
-        <!-- RETRY -->
-        <button class="retry-btn" id="retryBtn" onclick="retryStream()">
-
-          Retry
-
-        </button>
+        Live Stream
 
       </div>
 
     </div>
 
-  </main>
+
+    <!-- CENTER -->
+    <div class="center-controls" id="centerControls">
+
+      <button class="center-btn" onclick="seekBackward()">
+
+        <i class="ti ti-rewind-backward-10"></i>
+
+      </button>
+
+      <button class="center-play" onclick="togglePlay()">
+
+        <i class="ti ti-player-play" id="bigIcon"></i>
+
+      </button>
+
+      <button class="center-btn" onclick="seekForward()">
+
+        <i class="ti ti-rewind-forward-10"></i>
+
+      </button>
+
+    </div>
+
+
+    <!-- BUFFER -->
+    <div class="buffer-spinner" id="bufferSpinner">
+
+      <i class="ti ti-loader-2 spinning"></i>
+
+    </div>
+
+
+    <!-- BOTTOM -->
+    <div class="controls" id="controls">
+
+      <!-- Progress -->
+
+      <div class="progress-wrap">
+
+        <input type="range" id="progressBar" value="0">
+
+      </div>
+
+
+      <div class="bottom-controls">
+
+        <!-- Left -->
+
+        <div class="left-controls">
+
+          <button class="ctrl-btn" onclick="togglePlay()">
+
+            <i class="ti ti-player-play" id="playIcon"></i>
+
+          </button>
+
+          <span id="remainTime">
+
+            --:--
+
+          </span>
+
+        </div>
+
+
+        <!-- Right -->
+
+        <div class="right-controls">
+
+          <div class="volume-wrap">
+
+            <button class="ctrl-btn" onclick="toggleMute()">
+
+              <i class="ti ti-volume" id="volumeIcon"></i>
+
+            </button>
+
+            <input type="range" id="volumeSlider" min="0" max="100" value="100">
+
+          </div>
+
+
+          <button class="ctrl-btn" onclick="toggleSettings()">
+
+            <i class="ti ti-settings"></i>
+
+          </button>
+
+
+          <button class="ctrl-btn" id="pipBtn" onclick="togglePiP()">
+
+            <i class="ti ti-picture-in-picture"></i>
+
+          </button>
+
+
+          <button class="ctrl-btn" onclick="toggleFullscreen()">
+
+            <i class="ti ti-maximize" id="fullscreenIcon"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- SETTINGS -->
+
+    <div class="settings-menu" id="settingsMenu">
+
+      <div class="settings-title">
+
+        Quality
+
+      </div>
+
+      <div id="qualityList">
+
+      </div>
+
+    </div>
+
+
+  </div>
 
 </body>
 

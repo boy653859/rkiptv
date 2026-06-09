@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RK IP TV — All Channels</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ================================
+       CHANNELS PAGE SPECIFIC
+    ================================ */
+
+    /* PAGE WRAPPER */
+    .ch-page {
+      padding: 20px 18px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* PAGE HEADER */
+    .ch-page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .ch-page-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ch-page-title::before {
+      content: '';
+      width: 4px;
+      height: 26px;
+      background: var(--accent);
+      border-radius: 4px;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .ch-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* SEARCH BAR */
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 340px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .ch-search {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .ch-search:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: var(--bg-card-hover);
+    }
+
+    .ch-search::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* CATEGORY FILTER */
+    .cat-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cat-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .cat-btn:hover {
+      border-color: var(--border-accent);
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+
+    .cat-btn.active {
+      background: rgba(0, 198, 255, .12);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .cat-btn .cat-count {
+      background: rgba(255, 255, 255, .07);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 11px;
+    }
+
+    .cat-btn.active .cat-count {
+      background: rgba(0, 198, 255, .18);
+    }
+
+    /* CHANNEL GRID — 3 col desktop, 1 col mobile */
+    .ch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    /* CHANNEL CARD */
+    .ch-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* top accent line */
+    .ch-card::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .ch-card:hover {
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+    }
+
+    .ch-card:hover::before {
+      opacity: .6;
+    }
+
+    /* clickable = live + has url */
+    .ch-card.clickable {
+      cursor: pointer;
+    }
+
+    .ch-card.clickable:hover {
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .4), 0 0 0 1px rgba(0, 198, 255, .15);
+    }
+
+    /* CARD TOP: logo + name + live badge */
+    .ch-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .ch-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+    }
+
+    .ch-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+
+    .ch-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ch-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .2px;
+    }
+
+    .ch-cat {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    .ch-cat.cat-sports {
+      color: #22c55e;
+    }
+
+    .ch-cat.cat-news {
+      color: var(--accent);
+    }
+
+    .ch-cat.cat-movies {
+      color: #a855f7;
+    }
+
+    .ch-cat.cat-kids {
+      color: #eab308;
+    }
+
+    .ch-cat.cat-islamic {
+      color: #f97316;
+    }
+
+    .ch-cat.cat-others {
+      color: var(--text-muted);
+    }
+
+    /* CARD BOTTOM: status + watch btn */
+    .ch-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* LIVE badge */
+    .badge-live-card {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--live-bg);
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px var(--live-glow);
+      animation: livePulse 1.8s ease-in-out infinite;
+    }
+
+    .badge-live-card::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      animation: dotBlink 1.8s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 8px var(--live-glow);
+      }
+
+      50% {
+        box-shadow: 0 0 18px rgba(220, 38, 38, .6);
+      }
+    }
+
+    @keyframes dotBlink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .badge-offline-card {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .04);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* WATCH BUTTON */
+    .watch-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .watch-btn.live {
+      background: linear-gradient(135deg, var(--accent), #0080e0);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 198, 255, .3);
+    }
+
+    .watch-btn.live:hover {
+      opacity: .88;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0, 198, 255, .4);
+    }
+
+    .watch-btn.offline {
+      background: rgba(255, 255, 255, .04);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: not-allowed;
+    }
+
+    /* EMPTY STATE */
+    .ch-empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .ch-empty-icon {
+      font-size: 48px;
+      margin-bottom: 14px;
+      opacity: .4;
+    }
+
+    .ch-empty p {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* LOADING SPINNER */
+    .ch-loading {
+      grid-column: 1/-1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .spin-ring {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid var(--border-accent);
+      border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .ch-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .ch-page {
+        padding: 14px 10px calc(var(--bottom-nav-h) + 14px);
+      }
+
+      .ch-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .ch-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .search-wrap {
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .ch-page-title {
+        font-size: 22px;
+      }
+
+      .ch-card {
+        border-radius: 14px;
+        padding: 14px 14px 12px;
+      }
+
+      .ch-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 11px;
+      }
+
+      .ch-name {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <img src="assets/logo.png" alt="RK IP TV"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="logo-fallback" style="display:none">RK</span>
+      </div>
+      <span class="logo-text">RK <span class="accent">IP TV</span></span>
+    </div>
+    <nav class="desktop-nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="channels.html" class="nav-link active">All Channels</a>
+      <a href="settings.html" class="nav-link">Settings</a>
+    </nav>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="ch-page">
+
+    <!-- Page header -->
+    <div class="ch-page-header">
+      <div>
+        <div class="ch-page-title">All Channels</div>
+        <div class="ch-count" id="chCount">Loading...</div>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="search" class="ch-search" id="chSearch" placeholder="Search channels..." autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Category filter -->
+    <div class="cat-bar" id="catBar">
+      <button class="cat-btn active" data-cat="all" onclick="filterCat('all', this)">
+        📡 All <span class="cat-count" id="cnt-all">0</span>
+      </button>
+      <button class="cat-btn" data-cat="Sports" onclick="filterCat('Sports', this)">
+        ⚽ Sports <span class="cat-count" id="cnt-Sports">0</span>
+      </button>
+      <button class="cat-btn" data-cat="News" onclick="filterCat('News', this)">
+        📰 News <span class="cat-count" id="cnt-News">0</span>
+      </button>
+      <button class="cat-btn" data-cat="Movies" onclick="filterCat('Movies', this)">
+        🎬 Movies <span class="cat-count" id="cnt-Movies">0</span>
+      </button>
+      <button class="cat-btn" data-cat="Kids" onclick="filterCat('Kids', this)">
+        🧸 Kids <span class="cat-count" id="cnt-Kids">0</span>
+      </button>
+      <button class="cat-btn" data-cat="Islamic" onclick="filterCat('Islamic', this)">
+        ☪️ Islamic <span class="cat-count" id="cnt-Islamic">0</span>
+      </button>
+      <button class="cat-btn" data-cat="Others" onclick="filterCat('Others', this)">
+        📡 Others <span class="cat-count" id="cnt-Others">0</span>
+      </button>
+    </div>
+
+    <!-- Channel grid -->
+    <div class="ch-grid" id="chGrid">
+      <div class="ch-loading">
+        <div class="spin-ring"></div>
+        <span>Loading channels...</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV (Mobile) -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item">
+      <span class="bnav-icon">🏠</span><span>Home</span>
+    </a>
+    <a href="channels.html" class="bottom-nav-item active">
+      <span class="bnav-icon">📺</span><span>Channels</span>
+    </a>
+    <a href="settings.html" class="bottom-nav-item">
+      <span class="bnav-icon">⚙️</span><span>Settings</span>
+    </a>
+  </nav>
+
+  <script>
+    /* ================================================================
+       channels.js — All Channels Page
+    ================================================================ */
+    const API = 'api.php';
+
+    let allChannels = [];
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    const CAT_CLASS = {
+      Sports: 'cat-sports', News: 'cat-news', Movies: 'cat-movies',
+      Kids: 'cat-kids', Islamic: 'cat-islamic', Others: 'cat-others'
+    };
+
+    /* ---- Load from API ---- */
+    async function loadChannels() {
+      try {
+        const res = await fetch(`${API}?type=channels`);
+        const data = await res.json();
+        allChannels = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.warn('API error, fallback:', e);
+        allChannels = FALLBACK;
+      }
+      updateCounts();
+      render();
+    }
+
+    /* ---- Category counts ---- */
+    function updateCounts() {
+      const cats = ['Sports', 'News', 'Movies', 'Kids', 'Islamic', 'Others'];
+      document.getElementById('cnt-all').textContent = allChannels.length;
+      cats.forEach(c => {
+        const el = document.getElementById('cnt-' + c);
+        if (el) el.textContent = allChannels.filter(ch => ch.meta === c).length;
+      });
+    }
+
+    /* ---- Filter ---- */
+    function getFiltered() {
+      return allChannels.filter(ch => {
+        const catOk = activeCat === 'all' || ch.meta === activeCat;
+        const q = searchQuery.toLowerCase();
+        const searchOk = !q ||
+          (ch.name || '').toLowerCase().includes(q) ||
+          (ch.meta || '').toLowerCase().includes(q);
+        return catOk && searchOk;
+      });
+    }
+
+    /* ---- Category tab click ---- */
+    function filterCat(cat, el) {
+      activeCat = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      render();
+    }
+
+    /* ---- Search input ---- */
+    document.getElementById('chSearch').addEventListener('input', e => {
+      searchQuery = e.target.value.trim();
+      render();
+    });
+
+    /* ---- Render grid ---- */
+    function render() {
+      const list = getFiltered();
+      const grid = document.getElementById('chGrid');
+      const count = document.getElementById('chCount');
+
+      count.textContent = `${list.length} channel${list.length !== 1 ? 's' : ''}`;
+
+      if (!list.length) {
+        grid.innerHTML = `
+        <div class="ch-empty">
+          <div class="ch-empty-icon">📺</div>
+          <p>${searchQuery ? 'No channels match "' + esc(searchQuery) + '"' : 'No channels in this category.'}</p>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(ch => {
+        const isLive = !!(ch.is_live || ch.isLive);
+        const hasUrl = !!(ch.stream_url);
+        const canPlay = isLive && hasUrl;
+        const name = ch.name || '';
+        const meta = ch.meta || 'Others';
+        const catClass = CAT_CLASS[meta] || 'cat-others';
+        const catIcon = { Sports: '⚽', News: '📰', Movies: '🎬', Kids: '🧸', Islamic: '☪️', Others: '📡' }[meta] || '📡';
+
+        const logo = ch.logo
+          ? `<img src="${esc(ch.logo)}" alt="${esc(name)}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+               loading="lazy">
+           <span style="display:none">${esc(name.slice(0, 2).toUpperCase())}</span>`
+          : `<span>${esc(name.slice(0, 2).toUpperCase())}</span>`;
+
+        const liveBadge = isLive
+          ? `<span class="badge-live-card">LIVE</span>`
+          : `<span class="badge-offline-card">OFFLINE</span>`;
+
+        const watchBtn = canPlay
+          ? `<a class="watch-btn live"
+              href="player.html?src=${encodeURIComponent(ch.stream_url)}&title=${encodeURIComponent(name)}"
+              onclick="event.stopPropagation()">
+             ▶ Watch
+           </a>`
+          : `<button class="watch-btn offline" disabled>
+             ${isLive ? 'No URL' : 'Offline'}
+           </button>`;
+
+        // whole card click if canPlay
+        const cardClick = canPlay
+          ? `onclick="goPlayer('${encodeURIComponent(ch.stream_url)}','${encodeURIComponent(name)}')"`
+          : '';
+
+        return `
+      <div class="ch-card${canPlay ? ' clickable' : ''}" ${cardClick}>
+        <div class="ch-top">
+          <div class="ch-logo">${logo}</div>
+          <div class="ch-info">
+            <div class="ch-name">${esc(name)}</div>
+            <div class="ch-cat ${catClass}">${catIcon} ${esc(meta)}</div>
+          </div>
+        </div>
+        <div class="ch-bottom">
+          ${liveBadge}
+          ${watchBtn}
+        </div>
+      </div>`;
+      }).join('');
+    }
+
+    function goPlayer(encSrc, encTitle) {
+      window.location.href = `player.html?src=${encSrc}&title=${encTitle}`;
+    }
+
+    function esc(str) {
+      return String(str ?? '').replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    /* ---- Fallback data ---- */
+    const FALLBACK = [
+      { id: 1, name: 'ESPN', logo: null, meta: 'Sports', is_live: true, stream_url: null },
+      { id: 2, name: 'Sky Sports', logo: null, meta: 'Sports', is_live: true, stream_url: null },
+      { id: 3, name: 'Sony Sports', logo: null, meta: 'Sports', is_live: false, stream_url: null },
+      { id: 4, name: 'Star Sports', logo: null, meta: 'Sports', is_live: true, stream_url: null },
+      { id: 5, name: 'beIN Sports', logo: null, meta: 'Sports', is_live: false, stream_url: null },
+      { id: 6, name: 'CNN', logo: null, meta: 'News', is_live: true, stream_url: null },
+      { id: 7, name: 'BBC News', logo: null, meta: 'News', is_live: false, stream_url: null },
+      { id: 8, name: 'Netflix BD', logo: null, meta: 'Movies', is_live: false, stream_url: null },
+      { id: 9, name: 'Cartoon Net', logo: null, meta: 'Kids', is_live: true, stream_url: null },
+      { id: 10, name: 'Peace TV', logo: null, meta: 'Islamic', is_live: true, stream_url: null },
+    ];
+
+    /* ---- Init ---- */
+    window.addEventListener('load', loadChannels);
+  </script>
+
+</body>
+
+</html>

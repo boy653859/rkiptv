@@ -4,12 +4,12 @@
 // ============================================================
 
 define('DB_HOST',    'localhost');
-define('DB_USER',    'root');         // আপনার MySQL username
-define('DB_PASS',    '');             // আপনার MySQL password
+define('DB_USER',    'root');
+define('DB_PASS',    '');  
 define('DB_NAME',    'rkiptv');
 
 define('ADMIN_USER', 'admin');
-define('ADMIN_PASS', 'rk@admin123'); // এটা পরিবর্তন করুন!
+define('ADMIN_PASS', 'rk@admin123');
 
 // CORS
 header('Access-Control-Allow-Origin: *');

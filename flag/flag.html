@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Country Flag Finder</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Segoe UI, sans-serif;
+        }
+
+        body {
+            background: #07111f;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            outline: none;
+            border-radius: 12px;
+            background: #111c2e;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #list {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .item {
+            background: #0d1728;
+            border: 1px solid #1f2c44;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .top img {
+            width: 50px;
+            height: 35px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .code {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .link {
+            background: #111c2e;
+            color: #9bd0ff;
+            padding: 10px;
+            border-radius: 10px;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #00d26a;
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            opacity: .9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Country Flag Finder</h1>
+
+    <input type="text" id="search" placeholder="Search country...">
+
+    <div id="list"></div>
+
+    <script>
+
+        const list = document.getElementById("list");
+        const search = document.getElementById("search");
+
+        let countries = [];
+
+        fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
+            .then(response => response.json())
+            .then(data => {
+
+                countries = data
+                    .map(country => ({
+                        name: country.name.common,
+                        code: country.cca2.toLowerCase()
+                    }))
+                    .sort((a, b) =>
+                        a.name.localeCompare(b.name)
+                    );
+
+                render(countries);
+
+            });
+
+        function render(data) {
+
+            list.innerHTML = "";
+
+            data.forEach(country => {
+
+                const url =
+                    `https://flagcdn.com/w80/${country.code}.png`;
+
+                list.innerHTML += `
+
+        <div class="item">
+
+            <div class="top">
+
+                <img src="${url}">
+
+                <div>
+
+                    <div class="name">
+                        ${country.name}
+                    </div>
+
+                    <div class="code">
+                        ${country.code}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="link">
+                ${url}
+            </div>
+
+            <button onclick="copyLink('${url}')">
+                Copy Link
+            </button>
+
+        </div>
+
+        `;
+
+            });
+
+        }
+
+        search.addEventListener("input", () => {
+
+            const value =
+                search.value.toLowerCase();
+
+            const filtered =
+                countries.filter(country =>
+
+                    country.name
+                        .toLowerCase()
+                        .includes(value)
+
+                );
+
+            render(filtered);
+
+        });
+
+        function copyLink(link) {
+
+            navigator.clipboard.writeText(link);
+
+        }
+
+    </script>
+
+</body>
+
+</html>

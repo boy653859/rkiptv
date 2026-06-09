@@ -1,16 +1,10 @@
--- =============================================
--- RK IP TV — MySQL Schema
--- phpMyAdmin বা MySQL CLI তে run করুন
--- =============================================
-
-CREATE DATABASE IF NOT EXISTS rkiptv
+CREATE DATABASE IF NOT EXISTS if0_42142326_rkiptv
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE rkiptv;
+USE if0_42142326_rkiptv;
 
 -- MATCHES
--- status column নেই — api.php এ match_date+match_time থেকে auto-calculate হয়
 CREATE TABLE IF NOT EXISTS matches (
   id           INT AUTO_INCREMENT PRIMARY KEY,
   sport        ENUM('cricket','football','others') NOT NULL,
@@ -36,5 +30,17 @@ CREATE TABLE IF NOT EXISTS channels (
   is_live      TINYINT(1)   DEFAULT 0,
   meta         VARCHAR(100) DEFAULT 'Sports',
   created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_meta (meta)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ALL CHANNELS
+CREATE TABLE IF NOT EXISTS all_channels (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(100) NOT NULL,
+  logo       VARCHAR(500) DEFAULT NULL,
+  stream_url VARCHAR(500) DEFAULT NULL,
+  is_live    TINYINT(1)   DEFAULT 0,
+  meta       VARCHAR(100) DEFAULT 'Sports',
+  created_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_meta (meta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
