@@ -1,10 +1,12 @@
-/* =========================
-   PLAYER STATE
-========================= */
+/* ==========================
+   RK IP TV PLAYER
+========================== */
 
 let hls = null;
 let playing = false;
 let controlsTimer = null;
+
+const video = document.getElementById("video");
 
 const params = new URLSearchParams(location.search);
 
@@ -18,12 +20,14 @@ const TITLE =
         ? decodeURIComponent(params.get("title"))
         : "Live Stream";
 
-document.getElementById("pageTitle").textContent = TITLE;
-document.getElementById("channelTitle").textContent = TITLE;
+document.getElementById(
+    "channelTitle"
+).textContent = TITLE;
 
-/* =========================
+
+/* ==========================
    INIT
-========================= */
+========================== */
 
 if (SRC) {
 
@@ -31,18 +35,28 @@ if (SRC) {
 
 }
 
-/* =========================
-   PLAYER
-========================= */
+
+/* ==========================
+   HLS
+========================== */
 
 function initPlayer(src) {
 
-    const video =
-        document.getElementById("video");
+    showSpinner();
 
     if (Hls.isSupported()) {
 
-        hls = new Hls();
+        hls = new Hls({
+
+            autoStartLoad: true,
+
+            startLevel: -1,
+
+            capLevelToPlayerSize: true,
+
+            maxBufferLength: 20
+
+        });
 
         hls.loadSource(src);
 
@@ -50,7 +64,9 @@ function initPlayer(src) {
 
         hls.on(
             Hls.Events.MANIFEST_PARSED,
-            function () {
+            () => {
+
+                hideSpinner();
 
                 buildQualityMenu();
 
@@ -59,7 +75,7 @@ function initPlayer(src) {
 
         hls.on(
             Hls.Events.ERROR,
-            function (event, data) {
+            (event, data) => {
 
                 if (data.fatal) {
 
@@ -78,35 +94,18 @@ function initPlayer(src) {
 
     }
 
-    video.volume = .8;
+    video.volume = 1;
 
-    video.addEventListener(
-        "timeupdate",
-        updateProgress
-    );
-
-    video.addEventListener(
-        "waiting",
-        showSpinner
-    );
-
-    video.addEventListener(
-        "playing",
-        hideSpinner
-    );
-
-    setupControls();
+    bindVideoEvents();
 
 }
 
-/* =========================
-   PLAY
-========================= */
+
+/* ==========================
+   PLAY / PAUSE
+========================== */
 
 function togglePlay() {
-
-    const video =
-        document.getElementById("video");
 
     if (!playing) {
 
@@ -114,15 +113,7 @@ function togglePlay() {
 
         playing = true;
 
-        document
-            .getElementById("playIcon")
-            .className =
-            "ti ti-player-pause";
-
-        document
-            .getElementById("bigIcon")
-            .className =
-            "ti ti-player-pause";
+        setPlayIcons(true);
 
         hideCenter();
 
@@ -134,15 +125,7 @@ function togglePlay() {
 
         playing = false;
 
-        document
-            .getElementById("playIcon")
-            .className =
-            "ti ti-player-play";
-
-        document
-            .getElementById("bigIcon")
-            .className =
-            "ti ti-player-play";
+        setPlayIcons(false);
 
         showCenter();
 
@@ -150,14 +133,35 @@ function togglePlay() {
 
 }
 
-/* =========================
+
+function setPlayIcons(state) {
+
+    document.getElementById(
+        "playIcon"
+    ).className =
+        state
+            ?
+            "ti ti-player-pause"
+            :
+            "ti ti-player-play";
+
+    document.getElementById(
+        "bigIcon"
+    ).className =
+        state
+            ?
+            "ti ti-player-pause"
+            :
+            "ti ti-player-play";
+
+}
+
+
+/* ==========================
    SEEK
-========================= */
+========================== */
 
 function seekBackward() {
-
-    const video =
-        document.getElementById("video");
 
     video.currentTime -= 10;
 
@@ -165,117 +169,182 @@ function seekBackward() {
 
 function seekForward() {
 
-    const video =
-        document.getElementById("video");
-
     video.currentTime += 10;
 
 }
 
-/* =========================
-   PROGRESS
-========================= */
+
+/* ==========================
+   TIME
+========================== */
+
+function bindVideoEvents() {
+
+    video.addEventListener(
+
+        "timeupdate",
+
+        () => {
+
+            updateProgress();
+
+            updateRemain();
+
+        }
+
+    );
+
+    video.addEventListener(
+
+        "waiting",
+
+        showSpinner
+
+    );
+
+    video.addEventListener(
+
+        "playing",
+
+        hideSpinner
+
+    );
+
+}
+
 
 function updateProgress() {
-
-    const video =
-        document.getElementById("video");
-
-    const bar =
-        document.getElementById("progressBar");
 
     if (!video.duration)
         return;
 
-    bar.value =
-        (video.currentTime /
-            video.duration)
-        * 100;
+    const progress =
+        (
+            video.currentTime
+            /
+            video.duration
+        ) * 100;
+
+    document.getElementById(
+        "progressBar"
+    ).value = progress;
+
+    document.getElementById(
+        "currentTime"
+    ).innerText =
+        formatTime(
+            video.currentTime
+        );
+
+    document.getElementById(
+        "duration"
+    ).innerText =
+        formatTime(
+            video.duration
+        );
 
 }
 
-document
-    .getElementById(
-        "progressBar"
+
+function updateRemain() {
+
+    const remain =
+        video.duration
+        -
+        video.currentTime;
+
+    document.getElementById(
+        "remainTime"
+    ).innerText =
+        "-" +
+        formatTime(remain);
+
+}
+
+
+function formatTime(sec) {
+
+    sec = Math.floor(sec);
+
+    let m =
+        Math.floor(sec / 60);
+
+    let s =
+        sec % 60;
+
+    return (
+        m < 10
+            ? "0" + m
+            : m
     )
-    .addEventListener(
-        "input",
-        function () {
+        +
+        ":"
+        +
+        (
+            s < 10
+                ? "0" + s
+                : s
+        );
 
-            const video =
-                document.getElementById(
-                    "video"
-                );
+}
 
-            video.currentTime =
-                (this.value / 100)
-                *
-                video.duration;
 
-        }
-    );
-
-/* =========================
+/* ==========================
    VOLUME
-========================= */
+========================== */
 
 document
     .getElementById(
         "volumeSlider"
     )
     .addEventListener(
+
         "input",
+
         function () {
 
-            document
-                .getElementById(
-                    "video"
-                )
-                .volume =
+            video.volume =
                 this.value / 100;
 
         }
+
     );
 
-function toggleMute() {
 
-    const video =
-        document.getElementById(
-            "video"
-        );
+function toggleMute() {
 
     video.muted =
         !video.muted;
 
 }
 
-/* =========================
+
+/* ==========================
    SETTINGS
-========================= */
+========================== */
 
 function toggleSettings() {
 
     const menu =
         document.getElementById(
-            "settingsMenu"
+            "settingsPopup"
         );
 
     menu.style.display =
-        menu.style.display ===
-            "block"
-            ? "none"
-            : "block";
+        menu.style.display === "block"
+            ?
+            "none"
+            :
+            "block";
 
 }
 
-/* =========================
+
+/* ==========================
    QUALITY
-========================= */
+========================== */
 
 function buildQualityMenu() {
-
-    if (!hls)
-        return;
 
     const box =
         document.getElementById(
@@ -284,72 +353,85 @@ function buildQualityMenu() {
 
     box.innerHTML = "";
 
-    const auto =
-        document.createElement(
-            "div"
-        );
-
-    auto.innerText =
-        "Auto";
-
-    auto.onclick =
-        () => {
-
-            hls.currentLevel = -1;
-
-        };
-
-    box.appendChild(auto);
+    addQuality(
+        box,
+        "Auto",
+        -1
+    );
 
     hls.levels.forEach(
+
         (
             level,
             index
         ) => {
 
-            const div =
-                document.createElement(
-                    "div"
-                );
+            addQuality(
 
-            div.innerText =
+                box,
+
                 level.height
-                + "p";
+                + "p",
 
-            div.onclick =
-                () => {
+                index
 
-                    hls.currentLevel =
-                        index;
-
-                };
-
-            box.appendChild(
-                div
             );
 
         }
+
     );
 
 }
 
-/* =========================
+
+function addQuality(
+
+    box,
+    label,
+    value
+
+) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.className =
+        "quality-item";
+
+    div.innerText =
+        label;
+
+    div.onclick =
+        () => {
+
+            hls.currentLevel =
+                value;
+
+        };
+
+    box.appendChild(div);
+
+}
+
+
+/* ==========================
    FULLSCREEN
-========================= */
+========================== */
 
 function toggleFullscreen() {
 
-    const player =
-        document.querySelector(
-            ".video-area"
+    const area =
+        document.getElementById(
+            "videoArea"
         );
 
     if (
-        !document
-            .fullscreenElement
+        !document.fullscreenElement
     ) {
 
-        player.requestFullscreen();
+        area.requestFullscreen();
 
     }
 
@@ -361,16 +443,12 @@ function toggleFullscreen() {
 
 }
 
-/* =========================
-   PiP
-========================= */
+
+/* ==========================
+   PIP
+========================== */
 
 async function togglePiP() {
-
-    const video =
-        document.getElementById(
-            "video"
-        );
 
     try {
 
@@ -378,66 +456,66 @@ async function togglePiP() {
             document.pictureInPictureElement
         ) {
 
-            await document.exitPictureInPicture();
+            await
+                document.exitPictureInPicture();
 
         }
 
         else {
 
-            await video.requestPictureInPicture();
+            await
+                video.requestPictureInPicture();
 
         }
 
     }
 
-    catch (e) {
+    catch (err) {
 
-        console.log(e);
+        console.log(err);
 
     }
 
 }
 
-/* =========================
-   SPINNER
-========================= */
+
+/* ==========================
+   BUFFER
+========================== */
 
 function showSpinner() {
 
-    document
-        .getElementById(
-            "bufferSpinner"
-        )
-        .style.display =
+    document.getElementById(
+        "bufferSpinner"
+    ).style.display =
         "flex";
 
 }
 
+
 function hideSpinner() {
 
-    document
-        .getElementById(
-            "bufferSpinner"
-        )
-        .style.display =
+    document.getElementById(
+        "bufferSpinner"
+    ).style.display =
         "none";
 
 }
 
-/* =========================
+
+/* ==========================
    RETRY
-========================= */
+========================== */
 
 function showRetry() {
 
-    document
-        .getElementById(
-            "retryBtn"
-        )
-        .style.display =
+    document.getElementById(
+        "retryBtn"
+    ).style.display =
         "block";
 
 }
+
 
 function retryStream() {
 
@@ -445,111 +523,165 @@ function retryStream() {
 
 }
 
-/* =========================
+
+/* ==========================
    CENTER
-========================= */
+========================== */
 
 function hideCenter() {
 
-    document
-        .getElementById(
-            "centerOverlay"
-        )
-        .style.display =
+    document.getElementById(
+        "centerControls"
+    ).style.display =
         "none";
 
 }
 
+
 function showCenter() {
 
-    document
-        .getElementById(
-            "centerOverlay"
-        )
-        .style.display =
+    document.getElementById(
+        "centerControls"
+    ).style.display =
         "flex";
 
 }
 
-/* =========================
-   SHOW/HIDE CONTROLS
-========================= */
 
-function setupControls() {
+/* ==========================
+   AUTO HIDE CONTROLS
+========================== */
 
-    const area =
-        document.getElementById(
-            "videoArea"
-        );
-
-    area.addEventListener(
-        "mousemove",
-        showControls
+const playerArea =
+    document.getElementById(
+        "videoArea"
     );
-
-    area.addEventListener(
-        "touchstart",
-        showControls
-    );
-
-}
 
 function showControls() {
 
-    document
-        .getElementById(
-            "controls"
-        )
-        .style.opacity =
-        "1";
+    playerArea.classList.remove(
+        "hide-ui"
+    );
 
-    document
-        .getElementById(
-            "topOverlay"
-        )
-        .style.opacity =
-        "1";
+    document.body.style.cursor =
+        "default";
 
     clearTimeout(
         controlsTimer
     );
 
-    controlsTimer =
-        setTimeout(
-            hideControls,
-            3000
-        );
+    if (playing) {
+
+        controlsTimer =
+            setTimeout(
+
+                () => {
+
+                    playerArea.classList.add(
+                        "hide-ui"
+                    );
+
+                    document.body.style.cursor =
+                        "none";
+
+                },
+
+                3000
+
+            );
+    }
 
 }
 
-function hideControls() {
+playerArea.addEventListener(
+    "mousemove",
+    showControls
+);
 
-    if (!playing)
-        return;
+playerArea.addEventListener(
+    "touchstart",
+    showControls
+);
 
-    document
-        .getElementById(
-            "controls"
-        )
-        .style.opacity =
-        "0";
+showControls();
 
-    document
-        .getElementById(
-            "topOverlay"
-        )
-        .style.opacity =
-        "0";
 
-}
+/* ==========================
+   DOUBLE TAP SEEK
+========================== */
 
-/* =========================
-   SHORTCUTS
-========================= */
+let lastTapLeft = 0;
+let lastTapRight = 0;
+
+document
+    .getElementById(
+        "tapLeft"
+    )
+    .addEventListener(
+
+        "touchend",
+
+        () => {
+
+            const now =
+                Date.now();
+
+            if (
+                now - lastTapLeft
+                < 300
+            ) {
+
+                seekBackward();
+
+            }
+
+            lastTapLeft =
+                now;
+
+        }
+
+    );
+
+
+document
+    .getElementById(
+        "tapRight"
+    )
+    .addEventListener(
+
+        "touchend",
+
+        () => {
+
+            const now =
+                Date.now();
+
+            if (
+                now - lastTapRight
+                < 300
+            ) {
+
+                seekForward();
+
+            }
+
+            lastTapRight =
+                now;
+
+        }
+
+    );
+
+
+/* ==========================
+   KEYBOARD
+========================== */
 
 document.addEventListener(
+
     "keydown",
-    function (e) {
+
+    e => {
 
         if (
             e.code === "Space"
@@ -562,8 +694,7 @@ document.addEventListener(
         }
 
         if (
-            e.code ===
-            "ArrowLeft"
+            e.code === "ArrowLeft"
         ) {
 
             seekBackward();
@@ -571,8 +702,7 @@ document.addEventListener(
         }
 
         if (
-            e.code ===
-            "ArrowRight"
+            e.code === "ArrowRight"
         ) {
 
             seekForward();
@@ -586,6 +716,773 @@ document.addEventListener(
             toggleFullscreen();
 
         }
+
+        if (
+            e.code === "KeyP"
+        ) {
+
+            togglePiP();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   PLAYBACK SPEED
+========================== */
+
+document
+    .querySelectorAll(
+        ".speed-item"
+    )
+    .forEach(
+
+        item => {
+
+            item.onclick = () => {
+
+                document
+                    .querySelectorAll(
+                        ".speed-item"
+                    )
+                    .forEach(
+
+                        x =>
+                            x.classList.remove(
+                                "active"
+                            )
+
+                    );
+
+                item.classList.add(
+                    "active"
+                );
+
+                video.playbackRate =
+                    parseFloat(
+                        item.dataset.speed
+                    );
+
+            };
+
+        }
+
+    );
+
+
+/* ==========================
+   AUTO LANDSCAPE
+========================== */
+
+video.addEventListener(
+
+    "play",
+
+    async () => {
+
+        if (
+            window.innerWidth
+            <
+            900
+        ) {
+
+            try {
+
+                await document
+                    .getElementById(
+                        "videoArea"
+                    )
+                    .requestFullscreen();
+
+            }
+
+            catch (err) { }
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   AUTO RECONNECT
+========================== */
+
+let reconnectCount = 0;
+
+function reconnectStream() {
+
+    if (
+        reconnectCount >= 5
+    ) {
+
+        showRetry();
+
+        return;
+
+    }
+
+    reconnectCount++;
+
+    if (hls) {
+
+        hls.destroy();
+
+    }
+
+    setTimeout(
+
+        () => {
+
+            initPlayer(
+                SRC
+            );
+
+        },
+
+        2000
+
+    );
+
+}
+
+
+if (hls) {
+
+    hls.on(
+
+        Hls.Events.ERROR,
+
+        (
+            event,
+            data
+        ) => {
+
+            if (
+                data.fatal
+            ) {
+
+                reconnectStream();
+
+            }
+
+        }
+
+    );
+
+}
+
+
+/* ==========================
+   SETTINGS CLOSE
+========================== */
+
+document.addEventListener(
+
+    "click",
+
+    e => {
+
+        if (
+
+            !e.target.closest(
+                ".settings-popup"
+            )
+
+            &&
+
+            !e.target.closest(
+                ".ti-settings"
+            )
+
+        ) {
+
+            document
+                .getElementById(
+                    "settingsPopup"
+                )
+                .style.display =
+                "none";
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   LONG PRESS
+========================== */
+
+let pressTimer;
+
+playerArea.addEventListener(
+
+    "touchstart",
+
+    () => {
+
+        pressTimer =
+            setTimeout(
+
+                () => {
+
+                    video.playbackRate =
+                        2;
+
+                },
+
+                600
+
+            );
+
+    }
+
+);
+
+
+playerArea.addEventListener(
+
+    "touchend",
+
+    () => {
+
+        clearTimeout(
+            pressTimer
+        );
+
+        if (
+            video.playbackRate
+            === 2
+        ) {
+
+            video.playbackRate =
+                1;
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   EXIT FULLSCREEN
+========================== */
+
+document.addEventListener(
+
+    "fullscreenchange",
+
+    () => {
+
+        if (
+
+            !document.fullscreenElement
+
+        ) {
+
+            document.body.style.cursor =
+                "default";
+
+            playerArea.classList.remove(
+                "hide-ui"
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================
+   SETTINGS ANIMATION
+========================== */
+
+function toggleSettings() {
+
+    const menu =
+        document.getElementById(
+            "settingsPopup"
+        );
+
+    if (
+        menu.classList.contains(
+            "open"
+        )
+    ) {
+
+        menu.classList.remove(
+            "open"
+        );
+
+    }
+
+    else {
+
+        menu.classList.add(
+            "open"
+        );
+
+    }
+
+}
+
+
+/* ==========================
+   SETTINGS AUTO CLOSE
+========================== */
+
+document.addEventListener(
+
+    "click",
+
+    e => {
+
+        if (
+
+            !e.target.closest(
+                "#settingsPopup"
+            )
+
+            &&
+
+            !e.target.closest(
+                ".ti-settings"
+            )
+
+        ) {
+
+            document
+                .getElementById(
+                    "settingsPopup"
+                )
+                .classList.remove(
+                    "open"
+                );
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   LOCK CONTROLS
+========================== */
+
+let controlsLocked = false;
+
+function toggleLock() {
+
+    controlsLocked =
+        !controlsLocked;
+
+    if (controlsLocked) {
+
+        playerArea.classList.add(
+            "locked"
+        );
+
+    }
+
+    else {
+
+        playerArea.classList.remove(
+            "locked"
+        );
+
+    }
+
+}
+
+
+/* ==========================
+   VOLUME BOOST
+========================== */
+
+video.volume = 1;
+
+video.muted = false;
+
+document.getElementById(
+    "volumeSlider"
+).value = 100;
+
+
+/* ==========================
+   HIDE CENTER BUTTON
+========================== */
+
+video.addEventListener(
+
+    "playing",
+
+    () => {
+
+        document
+            .getElementById(
+                "centerControls"
+            )
+            .style.opacity =
+            "0";
+
+    }
+
+);
+
+
+video.addEventListener(
+
+    "pause",
+
+    () => {
+
+        document
+            .getElementById(
+                "centerControls"
+            )
+            .style.opacity =
+            "1";
+
+    }
+
+);
+
+
+/* ==========================
+   SMOOTH BUTTON EFFECT
+========================== */
+
+document
+    .querySelectorAll(
+        ".ctrl-btn"
+    )
+    .forEach(
+
+        btn => {
+
+            btn.addEventListener(
+
+                "click",
+
+                () => {
+
+                    btn.animate(
+
+                        [
+
+                            {
+
+                                transform:
+                                    "scale(1)"
+
+                            },
+
+                            {
+
+                                transform:
+                                    "scale(.9)"
+
+                            },
+
+                            {
+
+                                transform:
+                                    "scale(1)"
+
+                            }
+
+                        ],
+
+                        {
+
+                            duration: 180
+
+                        }
+
+                    );
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+/* ==========================
+   AUTO HIDE SETTINGS
+========================== */
+
+let settingsTimer;
+
+document
+    .getElementById(
+        "settingsPopup"
+    )
+    .addEventListener(
+
+        "mouseenter",
+
+        () => {
+
+            clearTimeout(
+                settingsTimer
+            );
+
+        }
+
+    );
+
+
+document
+    .getElementById(
+        "settingsPopup"
+    )
+    .addEventListener(
+
+        "mouseleave",
+
+        () => {
+
+            settingsTimer =
+                setTimeout(
+
+                    () => {
+
+                        document
+                            .getElementById(
+                                "settingsPopup"
+                            )
+                            .classList.remove(
+                                "open"
+                            );
+
+                    },
+
+                    3000
+
+                );
+
+        }
+
+    );
+
+
+/* ==========================
+   ANDROID FULLSCREEN
+========================== */
+
+video.addEventListener(
+
+    "play",
+
+    async () => {
+
+        if (
+
+            window.innerWidth
+            <
+
+            900
+
+        ) {
+
+            try {
+
+                await document
+                    .getElementById(
+                        "videoArea"
+                    )
+                    .requestFullscreen();
+
+            }
+
+            catch (err) { }
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   FULLSCREEN ICON
+========================== */
+
+document.addEventListener(
+
+    "fullscreenchange",
+
+    () => {
+
+        const icon =
+            document.getElementById(
+                "fullscreenIcon"
+            );
+
+        if (
+
+            document.fullscreenElement
+
+        ) {
+
+            icon.className =
+                "ti ti-minimize";
+
+        }
+
+        else {
+
+            icon.className =
+                "ti ti-maximize";
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   SHOW UI ON PAUSE
+========================== */
+
+video.addEventListener(
+
+    "pause",
+
+    () => {
+
+        playerArea.classList.remove(
+            "hide-ui"
+        );
+
+    }
+
+);
+
+
+/* ==========================
+   SPACE
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        if (
+            e.code === "Space"
+        ) {
+
+            e.preventDefault();
+
+            togglePlay();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   ARROWS
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        if (
+            e.code === "ArrowLeft"
+        ) {
+
+            seekBackward();
+
+        }
+
+        if (
+            e.code === "ArrowRight"
+        ) {
+
+            seekForward();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   MUTE
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        if (
+            e.code === "KeyM"
+        ) {
+
+            toggleMute();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   FULLSCREEN
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
+
+        if (
+            e.code === "KeyF"
+        ) {
+
+            toggleFullscreen();
+
+        }
+
+    }
+
+);
+
+
+/* ==========================
+   PiP
+========================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    e => {
 
         if (
             e.code === "KeyP"
