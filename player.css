@@ -1,142 +1,89 @@
 /* =========================
-   ROOT
+   RESET
 ========================= */
-:root {
-    --bg: #070b14;
-    --panel: #0d1322;
-    --panel2: #11192d;
-    --border: #1f2b45;
-    --text: #eef3ff;
-    --text2: #8a98b5;
-    --accent: #00c6ff;
-    --live: #ff2d55;
 
-    --font-d: 'Rajdhani', sans-serif;
-    --font-b: 'Nunito', sans-serif;
-}
-
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+:root {
+
+    --bg: #05070d;
+    --panel: #0d111b;
+    --panel2: #141b28;
+
+    --border: #1f2937;
+
+    --txt: #f4f7ff;
+    --txt2: #95a3bb;
+
+    --accent: #00c6ff;
+
+    --live: #ff2d55;
+
+    --font-d: 'Rajdhani', sans-serif;
+    --font-b: 'Nunito', sans-serif;
+
+}
+
 body {
-    background: var(--bg);
-    color: var(--text);
+
+    background: #000;
+
+    color: var(--txt);
+
     font-family: var(--font-b);
+
     overflow: hidden;
+
 }
 
 /* =========================
-   HEADER
+   PLAYER
 ========================= */
-.header {
-    height: 56px;
-
-    display: flex;
-    align-items: center;
-
-    padding: 0 16px;
-
-    background: rgba(7, 11, 20, .95);
-
-    border-bottom: 1px solid var(--border);
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-
-    z-index: 100;
-}
-
-.back-btn {
-    width: 38px;
-    height: 38px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: var(--panel);
-
-    color: #fff;
-
-    cursor: pointer;
-
-    font-size: 18px;
-}
-
-.header-title {
-
-    flex: 1;
-
-    text-align: center;
-
-    font-family: var(--font-d);
-
-    font-size: 20px;
-    font-weight: 700;
-
-    letter-spacing: .5px;
-}
-
-/* =========================
-   PAGE
-========================= */
-
-.player-page {
-
-    margin-top: 56px;
-
-    min-height: calc(100vh - 56px);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
-}
 
 .player-wrap {
 
-    width: 100%;
-    max-width: 1100px;
-}
+    width: 100vw;
 
-/* =========================
-   VIDEO
-========================= */
+    height: 100vh;
+
+    background: #000;
+
+}
 
 .video-area {
 
     position: relative;
 
-    overflow: hidden;
+    width: 100%;
 
-    border-radius: 18px;
+    height: 100%;
 
     background: #000;
 
-    aspect-ratio: 16/9;
+    overflow: hidden;
 
-    border: 1px solid var(--border);
 }
 
 #video {
 
     width: 100%;
+
     height: 100%;
 
-    display: block;
+    object-fit: contain;
 
     background: #000;
 
-    object-fit: contain;
 }
 
 /* =========================
-   TOP OVERLAY
+   TOP
 ========================= */
 
 .top-overlay {
@@ -147,48 +94,90 @@ body {
     left: 0;
     right: 0;
 
-    padding: 18px;
+    height: 72px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 16px;
 
     background:
-        linear-gradient(rgba(0, 0, 0, .85),
+        linear-gradient(rgba(0, 0, 0, .9),
             transparent);
 
-    transition: .2s;
+    z-index: 100;
+
+    transition: .25s;
+}
+
+.back-btn {
+
+    width: 42px;
+    height: 42px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .08);
+
+    color: white;
+
+    cursor: pointer;
+}
+
+.back-btn i {
+
+    font-size: 22px;
 }
 
 .channel-title {
 
+    flex: 1;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
     font-family: var(--font-d);
 
     font-size: 22px;
+
     font-weight: 700;
+
 }
 
 /* =========================
-   CENTER PLAY
+   CENTER
 ========================= */
 
-.center-overlay {
+.center-controls {
 
     position: absolute;
+
     inset: 0;
 
     display: flex;
-    justify-content: center;
+
     align-items: center;
+
+    justify-content: center;
+
+    gap: 28px;
+
+    z-index: 50;
+
 }
 
-.big-play {
-
-    width: 80px;
-    height: 80px;
+.center-btn,
+.center-play {
 
     border: none;
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, .15);
-
-    backdrop-filter: blur(8px);
 
     color: white;
 
@@ -197,49 +186,36 @@ body {
     transition: .2s;
 }
 
-.big-play:hover {
+.center-btn {
 
-    transform: scale(1.05);
+    width: 54px;
+    height: 54px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .08);
 }
 
-.big-play i {
+.center-btn i {
+
+    font-size: 24px;
+}
+
+.center-play {
+
+    width: 84px;
+    height: 84px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .12);
+
+    backdrop-filter: blur(10px);
+}
+
+.center-play i {
 
     font-size: 34px;
-}
-
-/* =========================
-   SPINNER
-========================= */
-
-.buffer-spinner {
-
-    position: absolute;
-    inset: 0;
-
-    display: none;
-
-    justify-content: center;
-    align-items: center;
-
-    background: rgba(0, 0, 0, .45);
-
-    z-index: 20;
-}
-
-.spinning {
-
-    font-size: 36px;
-
-    color: white;
-
-    animation: spin .8s linear infinite;
-}
-
-@keyframes spin {
-
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 /* =========================
@@ -254,13 +230,15 @@ body {
     right: 0;
     bottom: 0;
 
-    padding: 14px;
+    padding: 18px;
 
     background:
         linear-gradient(transparent,
-            rgba(0, 0, 0, .92));
+            rgba(0, 0, 0, .95));
 
-    transition: .2s;
+    z-index: 100;
+
+    transition: .25s;
 }
 
 /* =========================
@@ -269,18 +247,36 @@ body {
 
 .progress-wrap {
 
-    margin-bottom: 12px;
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+#currentTime,
+#duration {
+
+    font-size: 13px;
+
+    color: #fff;
+
+    min-width: 45px;
 }
 
 #progressBar {
 
-    width: 100%;
+    flex: 1;
 
     accent-color: var(--accent);
+
+    cursor: pointer;
 }
 
 /* =========================
-   BOTTOM BAR
+   BAR
 ========================= */
 
 .bottom-controls {
@@ -291,7 +287,6 @@ body {
 
     align-items: center;
 
-    gap: 16px;
 }
 
 .left-controls,
@@ -301,29 +296,23 @@ body {
 
     align-items: center;
 
-    gap: 10px;
+    gap: 12px;
 }
 
 .ctrl-btn {
 
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
 
     border: none;
-    border-radius: 12px;
+
+    border-radius: 50%;
 
     background: rgba(255, 255, 255, .08);
 
-    color: #fff;
+    color: white;
 
     cursor: pointer;
-
-    transition: .2s;
-}
-
-.ctrl-btn:hover {
-
-    background: rgba(255, 255, 255, .18);
 }
 
 .ctrl-btn i {
@@ -345,9 +334,16 @@ body {
 
     font-size: 12px;
 
-    font-weight: 800;
+    font-weight: 700;
 
     letter-spacing: 1px;
+}
+
+.remain-time {
+
+    color: var(--txt2);
+
+    font-size: 13px;
 }
 
 /* =========================
@@ -365,7 +361,7 @@ body {
 
 #volumeSlider {
 
-    width: 80px;
+    width: 90px;
 
     accent-color: var(--accent);
 }
@@ -374,33 +370,110 @@ body {
    SETTINGS
 ========================= */
 
-.settings-menu {
+.settings-popup {
 
     position: absolute;
 
-    right: 15px;
-    bottom: 80px;
+    right: 20px;
+    bottom: 95px;
 
-    width: 160px;
+    width: 220px;
 
-    background: var(--panel2);
+    max-height: 350px;
+
+    overflow-y: auto;
+
+    border-radius: 16px;
+
+    background: var(--panel);
 
     border: 1px solid var(--border);
 
-    border-radius: 14px;
+    display: none;
+
+    z-index: 200;
+}
+
+.settings-block {
+
+    padding: 14px;
+}
+
+.settings-head {
+
+    font-size: 13px;
+
+    color: var(--txt2);
+
+    margin-bottom: 10px;
+
+    text-transform: uppercase;
+}
+
+#qualityList,
+.speed-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.speed-item,
+.quality-item {
+
+    padding: 10px 14px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.speed-item:hover,
+.quality-item:hover {
+
+    background: rgba(255, 255, 255, .08);
+}
+
+/* =========================
+   BUFFER
+========================= */
+
+.buffer-spinner {
+
+    position: absolute;
+
+    inset: 0;
 
     display: none;
 
-    overflow: hidden;
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 150;
 }
 
-.settings-title {
+.spinning {
 
-    padding: 14px;
+    color: white;
 
-    border-bottom: 1px solid var(--border);
+    font-size: 40px;
 
-    font-weight: 700;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
 }
 
 /* =========================
@@ -411,26 +484,55 @@ body {
 
     position: absolute;
 
-    top: 50%;
     left: 50%;
+    top: 50%;
 
     transform: translate(-50%, -50%);
 
-    display: none;
-
     border: none;
-
-    padding: 12px 18px;
 
     border-radius: 12px;
 
     background: var(--accent);
 
-    color: #000;
+    color: black;
 
     font-weight: 700;
 
+    padding: 12px 20px;
+
     cursor: pointer;
+
+    display: none;
+
+    z-index: 160;
+}
+
+/* =========================
+   DOUBLE TAP
+========================= */
+
+.tap-zone {
+
+    position: absolute;
+
+    top: 0;
+
+    width: 35%;
+
+    height: 100%;
+
+    z-index: 40;
+}
+
+.tap-left {
+
+    left: 0;
+}
+
+.tap-right {
+
+    right: 0;
 }
 
 /* =========================
@@ -441,18 +543,25 @@ body {
 
     .channel-title {
 
-        font-size: 17px;
+        font-size: 18px;
+    }
+
+    .center-play {
+
+        width: 70px;
+        height: 70px;
+    }
+
+    .center-btn {
+
+        width: 48px;
+        height: 48px;
     }
 
     .ctrl-btn {
 
-        width: 36px;
-        height: 36px;
-    }
-
-    .ctrl-btn i {
-
-        font-size: 18px;
+        width: 38px;
+        height: 38px;
     }
 
     #volumeSlider {
@@ -460,10 +569,23 @@ body {
         width: 55px;
     }
 
-    .big-play {
+    .settings-popup {
 
-        width: 65px;
-        height: 65px;
+        width: 190px;
+
+        right: 10px;
     }
 
+}
+
+/* =========================
+   HIDE CONTROLS
+========================= */
+
+.hide-ui .top-overlay,
+.hide-ui .controls {
+
+    opacity: 0;
+
+    pointer-events: none;
 }
